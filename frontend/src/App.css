@@ -3,7 +3,10 @@
   --blue-hover: #0b47c9;
   --green-primary: #208136;
   --green-hover: #29a145;
+  --green-light: #dbf8e1;
   --text-secondary: #353535;
+  --border-light: #e3e3e3;
+  --grey-light: #e8e9ed;
 }
 .btn-hover-blue {
   transition: 0.3s !important;
@@ -33,4 +36,8 @@
 
 .card:hover {
   transform: translateY(-1px);
+}
+
+label {
+  font-weight: 600;
 }
