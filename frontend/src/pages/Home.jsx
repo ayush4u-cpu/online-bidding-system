@@ -3,14 +3,18 @@ import Navbar from "../components/Navbar";
 import Hero from "../sections/Hero";
 import ActiveAuction from "../sections/ActiveAuction";
 
-function Home() {
+function Home({ products, onSelectProduct, onNavigateHome, onNavigateDeliveries }) {
   return (
     <div>
-      <Navbar />
+      <Navbar 
+        onNavigateHome={onNavigateHome} 
+        onNavigateDeliveries={onNavigateDeliveries} 
+        currentPage="home" 
+      />
       <div className="main-content">
         <Hero />
         <hr />
-        <ActiveAuction />
+        <ActiveAuction products={products} onSelectProduct={onSelectProduct} />
       </div>
     </div>
   );

@@ -1,36 +1,44 @@
 import React from "react";
-import iphone from "../assets/iphone.jpeg";
 import Button from "./Button";
 import bid from "../assets/bid.png";
 
-function ProductCard() {
+function ProductCard({ product, onSelect }) {
+  if (!product) return null;
+
   return (
     <div
       className=" rounded-1 d-flex justify-content-center mx-2 card"
       style={{ width: "280px" }}
     >
       <div>
-        <img
-          src={iphone}
-          alt=""
-          srcset=""
-          style={{
-            width: "250px",
-            height: "125px",
-            objectFit: "cover",
-            objectPosition: "top",
-          }}
-        />
-        <div className="fw-ld text-center my-2">iPhone 17 Pro</div>
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: "15px" }}>
+          <img
+            src={product.imageSrc}
+            alt={product.title}
+            style={{
+              width: "250px",
+              height: "150px",
+              objectFit: "cover",
+              objectPosition: "center",
+              borderRadius: "4px",
+            }}
+          />
+        </div>
+        <div className="fw-bold text-center my-2">{product.title}</div>
         <div
-          className=" px-5"
+          className=" px-3 text-center"
           style={{
             color: "var(--text-secondary)",
             height: "60px",
             fontSize: "0.8rem",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical"
           }}
         >
-          iPhone 17 Pro. Exceptional, new Center Stage front camera.
+          {product.description}
         </div>
         <div className=" px-3">
           <hr />
@@ -47,7 +55,7 @@ function ProductCard() {
               style={{ color: "var(--green-primary)" }}
               className="text-center fw-bold"
             >
-              ₹70,000
+              ₹{product.basePrice.toLocaleString("en-IN")}
             </div>
           </div>
           <div className="">
@@ -61,7 +69,7 @@ function ProductCard() {
               style={{ color: "var(--blue-primary)" }}
               className="text-center fw-bold"
             >
-              ₹85,250
+              ₹{product.currentBid.toLocaleString("en-IN")}
             </div>
           </div>
         </div>
@@ -71,6 +79,7 @@ function ProductCard() {
             logo={bid}
             hover={"blue"}
             text={"View & Bid"}
+            onClick={onSelect}
           />
         </div>
       </div>

@@ -1,9 +1,17 @@
 import React from "react";
 
-function Navbar() {
+function Navbar({ onNavigateHome }) {
   return (
     <div className=" bg-black text-white py-3 px-4 d-flex justify-content-between fixed-top">
-      <div className=" fw-bold fs-5">Online Bidding</div>
+      <div className="d-flex align-items-center">
+        <div 
+          className=" fw-bold fs-5 me-4" 
+          onClick={onNavigateHome} 
+          style={{ cursor: "pointer" }}
+        >
+          Online Bidding
+        </div>
+      </div>
       <div>
         <button
           style={{

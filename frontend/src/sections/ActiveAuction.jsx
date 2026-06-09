@@ -3,7 +3,7 @@ import ProductCard from "../components/ProductCard";
 import ButtonOutlined from "../components/ButtonOutlined";
 import share from "../assets/share.png";
 
-function ActiveAuction() {
+function ActiveAuction({ products, onSelectProduct }) {
   return (
     <div>
       <div className="d-flex justify-content-center">
@@ -20,9 +20,15 @@ function ActiveAuction() {
           </div>
         </div>
       </div>
-      <div className="d-flex justify-content-center">
-        {[1, 2, 3, 4, 5].map((i) => {
-          return <ProductCard />;
+      <div className="d-flex justify-content-center flex-wrap gap-4 py-3">
+        {products && products.map((product) => {
+          return (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onSelect={() => onSelectProduct(product.id)} 
+            />
+          );
         })}
       </div>
       <div className="d-flex justify-content-center">
