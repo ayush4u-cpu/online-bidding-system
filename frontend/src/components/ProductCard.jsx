@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import iphone from "../assets/iphone.jpeg";
 import Button from "./Button";
 import bid from "../assets/bid.png";
@@ -13,7 +13,7 @@ function ProductCard() {
         <img
           src={iphone}
           alt=""
-          srcset=""
+          srcSet=""
           style={{
             width: "250px",
             height: "125px",
@@ -47,7 +47,7 @@ function ProductCard() {
               style={{ color: "var(--green-primary)" }}
               className="text-center fw-bold"
             >
-              ₹70,000
+              Rs 70,000
             </div>
           </div>
           <div className="">
@@ -61,7 +61,7 @@ function ProductCard() {
               style={{ color: "var(--blue-primary)" }}
               className="text-center fw-bold"
             >
-              ₹85,250
+              Rs 85,250
             </div>
           </div>
         </div>
