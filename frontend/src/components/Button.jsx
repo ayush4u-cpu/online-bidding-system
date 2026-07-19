@@ -1,10 +1,13 @@
-﻿import React from "react";
+import React from "react";
 
-function Button({ color, logo, hover, text, navigate, path }) {
+function Button({ color, logo, hover, text, navigate, path, onClick, type = "button" }) {
   return (
     <button
-    onClick={() => {
-        if (navigate && path) {
+      type={type}
+      onClick={(e) => {
+        if (onClick) {
+          onClick(e);
+        } else if (navigate && path) {
           navigate(path);
         }
       }}

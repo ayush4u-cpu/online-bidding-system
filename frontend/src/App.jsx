@@ -6,6 +6,7 @@ import SellerDashboard from "./pages/SellerDashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import BuyerDashboard from "./pages/BuyerDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -18,15 +19,24 @@ function App() {
         <Route
           path="/seller/dashboard"
           element={
-            <div className="container">
-              <SellerDashboard />
-            </div>
+            <ProtectedRoute allowedRoles={["SELLER"]}>
+              <div className="container">
+                <SellerDashboard />
+              </div>
+            </ProtectedRoute>
           }
         />
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
+        <Route
+          path="/buyer/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["BUYER"]}>
+              <BuyerDashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

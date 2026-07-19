@@ -14,22 +14,20 @@ function Login() {
   const handleLogin = () => {
     const storedUser = JSON.parse(sessionStorage.getItem("registeredUser"));
 
-    if (
-      storedUser &&
-      storedUser.email === email &&
-      storedUser.password === password
-    ) {
+    if (storedUser && storedUser.email === email && storedUser.password === password) {
       sessionStorage.setItem("loggedInUserName", storedUser.name);
-      navigate("/dashboard");
-    } else {
-      alert("Invalid email or password");
+      sessionStorage.setItem("loggedInUserRole", storedUser.role);
+      if (storedUser.role === "SELLER") {
+        navigate("/seller/dashboard");
+      } else {
+        navigate("/buyer/dashboard");
+      }
     }
+
   };
 
   return (
     <>
-      <Navbar />
-
       <div className="login-container">
         <div className="login-card">
           <h1>Login</h1>

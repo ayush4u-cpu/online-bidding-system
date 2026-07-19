@@ -1,11 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ProductCard from "../components/ProductCard";
 import ButtonOutlined from "../components/ButtonOutlined";
+import { getAuctions } from "../utils/db";
 import share from "../assets/share.png";
 
 function ActiveAuction() {
+  const [auctions, setAuctions] = useState([]);
+
+  const loadAuctions = () => {
+    const allAuctions = getAuctions();
+    const activeAuctions = allAuctions.filter((a) => a.status === "ACTIVE");
+    setAuctions(activeAuctions);
+  };
+
+  useEffect(() => {
+    loadAuctions();
+  }, []);
+
   return (
-    <div>
+    <div className="container">
       <div className="d-flex justify-content-center">
         <div style={{ width: "200px" }}>
           <h4 className="d-flex justify-content-center">Active Auctions</h4>
@@ -20,10 +33,19 @@ function ActiveAuction() {
           </div>
         </div>
       </div>
-      <div className="d-flex justify-content-center">
-        {[1, 2, 3, 4, 5].map((i) => {
-          return <ProductCard />;
-        })}
+      <div className="d-flex justify-content-center flex-wrap gap-3">
+        {auctions.map((auction) => (
+          <ProductCard 
+            key={auction.id} 
+            product={auction} 
+            onBidPlaced={loadAuctions} 
+          />
+        ))}
+        {auctions.length === 0 && (
+          <div className="text-muted py-4 text-center w-100">
+            No active auctions available right now.
+          </div>
+        )}
       </div>
       <div className="d-flex justify-content-center">
         <div className="d-flex my-3">
