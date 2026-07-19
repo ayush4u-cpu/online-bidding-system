@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import Button from "../components/Button";
 import { getAuctions } from "../utils/db";
 import "../styles/BuyerDashboard.css";
 
-import share from "../assets/share.png";
+import share from "../assets/share-white.png";
 
 function BuyerDashboard() {
+  const navigate = useNavigate();
   const [auctions, setAuctions] = useState([]);
   const userName = sessionStorage.getItem("loggedInUserName") || "Buyer";
 
@@ -37,12 +39,13 @@ function BuyerDashboard() {
             </p>
           </div>
 
-          <div style={{ width: "150px" }}>
+          <div style={{ width: "200px" }}>
             <Button
               color={"var(--green-primary)"}
               logo={share}
               hover={"green"}
               text={"My Orders"}
+              onClick={() => navigate("/orders")}
             />
           </div>
         </div>
@@ -55,10 +58,10 @@ function BuyerDashboard() {
         {/* Product Cards */}
         <div className="auctions-grid">
           {auctions.map((auction) => (
-            <ProductCard 
-              key={auction.id} 
-              product={auction} 
-              onBidPlaced={loadAuctions} 
+            <ProductCard
+              key={auction.id}
+              product={auction}
+              onBidPlaced={loadAuctions}
             />
           ))}
           {auctions.length === 0 && (

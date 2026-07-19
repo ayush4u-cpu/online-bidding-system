@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ProductCard from "../components/ProductCard";
 import ButtonOutlined from "../components/ButtonOutlined";
 import { getAuctions } from "../utils/db";
-import share from "../assets/share.png";
+import share from "../assets/share-blue.png";
 
 function ActiveAuction() {
   const [auctions, setAuctions] = useState([]);
@@ -35,9 +35,9 @@ function ActiveAuction() {
       </div>
       <div className="d-flex justify-content-center flex-wrap gap-4 py-3">
         {auctions.map((auction) => (
-          <ProductCard 
-            key={auction.id} 
-            product={auction} 
+          <ProductCard
+            key={auction.id}
+            product={auction}
           />
         ))}
         {auctions.length === 0 && (

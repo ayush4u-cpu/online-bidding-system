@@ -27,6 +27,7 @@ function Navbar() {
     if (!user) return "/";
     if (user.role === "SELLER") return "/seller/dashboard";
     if (user.role === "DELIVERY") return "/delivery";
+    if (user.role === "ADMIN") return "/admin/dashboard";
     return "/buyer/dashboard";
   };
 
@@ -41,16 +42,23 @@ function Navbar() {
             <span style={{ fontSize: "0.9rem", color: "#ccc" }}>
               Welcome, <strong className="text-white">{user.name}</strong> ({user.role})
             </span>
-            
+
             {/* Conditional Wallet link for Buyer and Seller */}
             {(user.role === "BUYER" || user.role === "SELLER") && (
               <button
                 onClick={() => navigate(user.role === "BUYER" ? "/buyer-wallet" : "/seller-wallet")}
                 style={{ backgroundColor: "#6f42c1" }}
-                className="text-white rounded-1 border-0 px-3 py-1.5"
+                className="text-white rounded-1 border-0 px-3 py-2"
               >
                 My Wallet
               </button>
+            )}
+
+            {/* Conditional Admin Wallet balance */}
+            {user.role === "ADMIN" && (
+              <span className="text-light small border border-secondary rounded px-3 py-2 bg-dark">
+                💳 Wallet (₹1,25,600)
+              </span>
             )}
 
             {/* Conditional Delivery Dashboard link */}
@@ -58,7 +66,7 @@ function Navbar() {
               <button
                 onClick={() => navigate("/delivery")}
                 style={{ backgroundColor: "var(--green-primary)" }}
-                className="text-white rounded-1 border-0 px-3 py-1.5"
+                className="text-white rounded-1 border-0 px-3 py-2"
               >
                 Deliveries
               </button>
@@ -67,15 +75,15 @@ function Navbar() {
             <button
               onClick={() => navigate(getDashboardPath())}
               style={{ backgroundColor: "var(--blue-primary)" }}
-              className="text-white rounded-1 border-0 px-3 py-1.5 btn-hover-blue"
+              className="text-white rounded-1 border-0 px-3 py-2 btn-hover-blue"
             >
-              Dashboard
+              {user.role === "ADMIN" ? "Dashboard (Admin)" : "Dashboard"}
             </button>
-            
+
             <button
               onClick={handleLogout}
               style={{ backgroundColor: "#dc3545" }}
-              className="text-white rounded-1 border-0 px-3 py-1.5"
+              className="text-white rounded-1 border-0 px-3 py-2"
             >
               Logout
             </button>
@@ -87,14 +95,14 @@ function Navbar() {
               style={{
                 backgroundColor: "var(--blue-primary)",
               }}
-              className="text-white rounded-1 border-0 px-3 py-1.5 mx-1 btn-hover-blue"
+              className="text-white rounded-1 border-0 px-3 py-2 mx-1 btn-hover-blue"
             >
               Login
             </button>
             <button
               onClick={() => navigate("/register")}
               style={{ backgroundColor: "var(--green-primary)" }}
-              className="text-white rounded-1 border-0 px-3 py-1.5 mx-1 btn-hover-green"
+              className="text-white rounded-1 border-0 px-3 py-2 mx-1 btn-hover-green"
             >
               Register
             </button>

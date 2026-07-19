@@ -205,6 +205,12 @@ export function initDb() {
   if (!localStorage.getItem("wallets")) {
     localStorage.setItem("wallets", JSON.stringify(defaultWallets));
   }
+  if (!localStorage.getItem("categories")) {
+    localStorage.setItem("categories", JSON.stringify(defaultCategories));
+  }
+  if (!localStorage.getItem("orders")) {
+    localStorage.setItem("orders", JSON.stringify(defaultOrders));
+  }
 }
 
 export function getAuctions() {
@@ -309,4 +315,100 @@ export function addMoney(role, amount) {
   });
   localStorage.setItem("wallets", JSON.stringify(wallets));
   return wallets[role];
+}
+
+const defaultCategories = [
+  { id: 1, name: "Electronics", description: "Devices and gadgets including phones, laptops, cameras and more." },
+  { id: 2, name: "Furniture", description: "Home and office furniture including chairs, tables, beds and more." },
+  { id: 3, name: "Fashion", description: "Clothing, shoes, watches, and accessories for men and women." },
+  { id: 4, name: "Books", description: "Fiction, non-fiction, academic and children's books." }
+];
+
+const defaultOrders = [
+  {
+    id: "ORD-1001",
+    productName: "iPhone 14 Pro Max",
+    specifications: "256GB, Space Black",
+    price: 85250,
+    status: "ASSIGNED",
+    deliveryPerson: "Ramesh Kumar",
+    image: "iphone.jpeg"
+  },
+  {
+    id: "ORD-1002",
+    productName: "MacBook Air M2",
+    specifications: "8GB RAM, 256GB SSD",
+    price: 92500,
+    status: "OUT_FOR_DELIVERY",
+    deliveryPerson: "Suresh Yadav",
+    image: "macbook.png"
+  },
+  {
+    id: "ORD-1003",
+    productName: "Canon EOS 90D",
+    specifications: "18-135mm Lens, DSLR Camera",
+    price: 52750,
+    status: "DELIVERED",
+    deliveryPerson: "Ramesh Kumar",
+    image: ""
+  },
+  {
+    id: "ORD-1004",
+    productName: "PlayStation 5",
+    specifications: "Digital Edition, 8K Gaming Console",
+    price: 47000,
+    status: "ASSIGNED",
+    deliveryPerson: "Not Assigned",
+    image: "ps6.png"
+  },
+  {
+    id: "ORD-1005",
+    productName: "iPad Air (5th Gen)",
+    specifications: "64GB, Wi-Fi",
+    price: 43000,
+    status: "DELIVERED",
+    deliveryPerson: "Anil Verma",
+    image: ""
+  }
+];
+
+export function getCategories() {
+  initDb();
+  return JSON.parse(localStorage.getItem("categories")) || [];
+}
+
+export function addCategory(category) {
+  initDb();
+  const categories = getCategories();
+  const newCat = {
+    id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
+    name: category.name,
+    description: category.description
+  };
+  categories.push(newCat);
+  localStorage.setItem("categories", JSON.stringify(categories));
+  return newCat;
+}
+
+export function deleteCategory(id) {
+  initDb();
+  let categories = getCategories();
+  categories = categories.filter(c => c.id !== Number(id));
+  localStorage.setItem("categories", JSON.stringify(categories));
+  return categories;
+}
+
+export function updateCategory(id, updatedCat) {
+  initDb();
+  const categories = getCategories();
+  const idx = categories.findIndex(c => c.id === Number(id));
+  if (idx !== -1) {
+    categories[idx] = { ...categories[idx], ...updatedCat };
+    localStorage.setItem("categories", JSON.stringify(categories));
+  }
+}
+
+export function getOrders() {
+  initDb();
+  return JSON.parse(localStorage.getItem("orders")) || [];
 }

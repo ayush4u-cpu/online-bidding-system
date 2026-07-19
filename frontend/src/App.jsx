@@ -10,6 +10,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProductDescription from "./pages/ProductDescription";
 import DeliveryDashboard from "./pages/DeliveryDashboard";
 import MyWallet from "./pages/MyWallet";
+import AdminDashboard from "./pages/AdminDashboard";
+import MyOrders from "./pages/MyOrders";
 
 function App() {
   return (
@@ -65,6 +67,24 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["SELLER"]}>
               <MyWallet role="seller" />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute allowedRoles={["BUYER"]}>
+              <MyOrders />
             </ProtectedRoute>
           }
         />
