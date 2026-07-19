@@ -1,19 +1,30 @@
-﻿import Navbar from "../components/Navbar";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import Button from "../components/Button";
+import { getAuctions } from "../utils/db";
 import "../styles/BuyerDashboard.css";
 
-import share from "../assets/share.png";
+import share from "../assets/share-white.png";
 
 function BuyerDashboard() {
-  const auctions = [1, 2, 3, 4];
-
+  const navigate = useNavigate();
+  const [auctions, setAuctions] = useState([]);
   const userName = sessionStorage.getItem("loggedInUserName") || "Buyer";
+
+  const loadAuctions = () => {
+    const allAuctions = getAuctions();
+    // Filter to show only active auctions
+    const activeAuctions = allAuctions.filter((a) => a.status === "ACTIVE");
+    setAuctions(activeAuctions);
+  };
+
+  useEffect(() => {
+    loadAuctions();
+  }, []);
 
   return (
     <>
-      <Navbar dashboard={true} />
-
       <div className="dashboard-container">
         {/* Header Section */}
         <div className="dashboard-header">
@@ -28,12 +39,13 @@ function BuyerDashboard() {
             </p>
           </div>
 
-          <div style={{ width: "150px" }}>
+          <div style={{ width: "200px" }}>
             <Button
               color={"var(--green-primary)"}
               logo={share}
               hover={"green"}
               text={"My Orders"}
+              onClick={() => navigate("/orders")}
             />
           </div>
         </div>
@@ -46,8 +58,17 @@ function BuyerDashboard() {
         {/* Product Cards */}
         <div className="auctions-grid">
           {auctions.map((auction) => (
-            <ProductCard key={auction} />
+            <ProductCard
+              key={auction.id}
+              product={auction}
+              onBidPlaced={loadAuctions}
+            />
           ))}
+          {auctions.length === 0 && (
+            <div className="text-muted py-5 text-center w-100 grid-span-4" style={{ gridColumn: "1 / -1" }}>
+              No active auctions available right now.
+            </div>
+          )}
         </div>
         <div className="view-all-container">
           <div style={{ width: "210px" }}>

@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Button from "../components/Button";
@@ -12,15 +12,25 @@ function Login() {
   const [password, setPassword] = useState("");
 
   const handleLogin = () => {
+    if (email === "admin@mail.com" && password === "admin123") {
+      sessionStorage.setItem("loggedInUserName", "Admin");
+      sessionStorage.setItem("loggedInUserRole", "ADMIN");
+      navigate("/admin/dashboard");
+      return;
+    }
+
     const storedUser = JSON.parse(sessionStorage.getItem("registeredUser"));
 
-    if (
-      storedUser &&
-      storedUser.email === email &&
-      storedUser.password === password
-    ) {
+    if (storedUser && storedUser.email === email && storedUser.password === password) {
       sessionStorage.setItem("loggedInUserName", storedUser.name);
-      navigate("/dashboard");
+      sessionStorage.setItem("loggedInUserRole", storedUser.role);
+      if (storedUser.role === "SELLER") {
+        navigate("/seller/dashboard");
+      } else if (storedUser.role === "BUYER") {
+        navigate("/buyer/dashboard");
+      } else {
+        navigate("/delivery");
+      }
     } else {
       alert("Invalid email or password");
     }
@@ -28,8 +38,6 @@ function Login() {
 
   return (
     <>
-      <Navbar />
-
       <div className="login-container">
         <div className="login-card">
           <h1>Login</h1>

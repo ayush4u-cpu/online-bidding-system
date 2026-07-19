@@ -1,0 +1,187 @@
+{
+  "products": [
+    {
+      "id": "iphone_17",
+      "title": "iPhone 17 Pro",
+      "description": "The iPhone 17 Pro pushes the boundaries of what is possible on a smartphone. Featuring a next-generation A19 Bionic chip, an exceptional new Center Stage front camera, and a titanium alloy frame. The advanced triple-lens camera system delivers unmatched low-light performance and cinematic recording.",
+      "features": [
+        "A19 Bionic Chip (3nm architecture)",
+        "6.7-inch Super Retina XDR OLED Display (120Hz)",
+        "Triple-lens 48MP Pro Camera System",
+        "Center Stage 24MP Front Camera",
+        "Titanium Alloy Design with Ceramic Shield"
+      ],
+      "basePrice": 70000,
+      "currentBid": 85250,
+      "timeRemaining": "2 days 4 hours",
+      "image": "iphone.jpeg",
+      "condition": "New",
+      "seller": {
+        "name": "Apple Authorized Store"
+      }
+    },
+    {
+      "id": "rolex_watch",
+      "title": "Vintage Rolex Submariner",
+      "description": "An exquisite vintage Rolex Submariner reference 16610. Known for its rugged reliability and classic style, this legendary dive watch features a black dial, Oyster steel bracelet, and unidirectional rotating bezel. Kept in pristine collector condition.",
+      "features": [
+        "Oystersteel bracelet and case",
+        "Calibre 3135 Automatic Movement",
+        "Waterproof up to 300 meters (1000 feet)",
+        "Pristine condition with original box & papers",
+        "Unidirectional rotatable bezel"
+      ],
+      "basePrice": 450000,
+      "currentBid": 510000,
+      "timeRemaining": "1 day 8 hours",
+      "image": "rolex.png",
+      "condition": "Collectible",
+      "seller": {
+        "name": "Heritage Horology"
+      }
+    },
+    {
+      "id": "ps6_console",
+      "title": "PlayStation 6 Console",
+      "description": "Experience next-level gaming with the brand new PlayStation 6. Introducing ultra-high-speed SSD, deeper immersion with support for haptic feedback, adaptive triggers, and 3D Audio, and an all-new generation of incredible PlayStation games.",
+      "features": [
+        "Ultra-High-Speed 2TB SSD",
+        "8K Ultra HD Resolution support",
+        "Next-gen Ray Tracing 2.0 technology",
+        "DualSense Edge Pro controller included",
+        "Backward compatibility with PS4 and PS5 games"
+      ],
+      "basePrice": 45000,
+      "currentBid": 58000,
+      "timeRemaining": "3 days 12 hours",
+      "image": "ps6.png",
+      "condition": "New",
+      "seller": {
+        "name": "GameZone Retail"
+      }
+    },
+    {
+      "id": "tesla_model_s",
+      "title": "Tesla Model S Toy Edition",
+      "description": "A rare collector's edition 1:18 scale diecast model of the Tesla Model S Plaid. Crafted with meticulously detailed interior, working steering wheel, opening doors, trunk, and hood. Finished in signature Tesla Solid Black paint.",
+      "features": [
+        "1:18 Scale Precision Diecast Metal",
+        "Functional steering wheel and suspension",
+        "Detailed interior replication and battery pack layout",
+        "Signature Tesla Solid Black glossy finish",
+        "Collector's certificate of authenticity included"
+      ],
+      "basePrice": 5000,
+      "currentBid": 6200,
+      "timeRemaining": "5 hours 15 mins",
+      "image": "tesla.png",
+      "condition": "Collectible",
+      "seller": {
+        "name": "Diecast Emporium"
+      }
+    },
+    {
+      "id": "macbook_pro",
+      "title": "MacBook Pro M5 Max",
+      "description": "The peak of portable performance. Powered by the M5 Max chip with a 16-core CPU and 40-core GPU, 64GB unified memory, and 2TB high speed SSD. Features the stunning Liquid Retina XDR display with ProMotion and extreme battery life.",
+      "features": [
+        "Apple M5 Max Chip with 16-core CPU, 40-core GPU",
+        "64GB Unified Memory (RAM)",
+        "2TB super-fast SSD Storage",
+        "16-inch Liquid Retina XDR Display",
+        "Studio-quality three-mic array and six-speaker sound"
+      ],
+      "basePrice": 180000,
+      "currentBid": 215000,
+      "timeRemaining": "4 days 2 hours",
+      "image": "macbook.png",
+      "condition": "Like New",
+      "seller": {
+        "name": "Apex Devices"
+      }
+    }
+  ],
+  "deliveries": [
+    {
+      "id": "DLV-9018",
+      "productName": "iPhone 16 Pro",
+      "winner": "Amit K.",
+      "price": 82000,
+      "status": "Assigned",
+      "estimatedDelivery": "June 05, 2026"
+    },
+    {
+      "id": "DLV-3482",
+      "productName": "Sony WH-1000XM5 Headphones",
+      "winner": "Priya M.",
+      "price": 24500,
+      "status": "Out for Delivery",
+      "estimatedDelivery": "June 12, 2026"
+    },
+    {
+      "id": "DLV-7712",
+      "productName": "Keychron Q1 Mechanical Keyboard",
+      "winner": "Siddharth R.",
+      "price": 14000,
+      "status": "Assigned",
+      "estimatedDelivery": "June 14, 2026"
+    },
+    {
+      "id": "DLV-1029",
+      "productName": "iPad Air M2",
+      "winner": "Ayush S.",
+      "price": 54000,
+      "status": "Delivered",
+      "estimatedDelivery": "June 16, 2026"
+    },
+    {
+      "id": "DLV-5520",
+      "productName": "Razer BlackWidow Keyboard",
+      "winner": "Devansh S.",
+      "price": 12500,
+      "status": "Assigned",
+      "estimatedDelivery": "June 18, 2026"
+    },
+    {
+      "id": "DLV-4019",
+      "productName": "Logitech G Pro X Superlight",
+      "winner": "Pavitra N.",
+      "price": 9500,
+      "status": "Out for Delivery",
+      "estimatedDelivery": "June 15, 2026"
+    },
+    {
+      "id": "DLV-8812",
+      "productName": "Apple Watch Ultra 2",
+      "winner": "Tejas B.",
+      "price": 68000,
+      "status": "Assigned",
+      "estimatedDelivery": "June 20, 2026"
+    },
+    {
+      "id": "DLV-3029",
+      "productName": "Bellroy Leather Wallet",
+      "winner": "Amit K.",
+      "price": 6200,
+      "status": "Delivered",
+      "estimatedDelivery": "June 13, 2026"
+    }
+  ],
+  "wallets": {
+    "buyer": {
+      "balance": 150000,
+      "transactions": [
+        { "type": "Deposit", "amount": 50000, "date": "June 08, 2026" },
+        { "type": "Auction Bid Hold", "amount": -85250, "date": "June 07, 2026" },
+        { "type": "Refund", "amount": 45000, "date": "June 05, 2026" }
+      ]
+    },
+    "seller": {
+      "balance": 725000,
+      "transactions": [
+        { "type": "Auction Payout", "amount": 82000, "date": "June 06, 2026" },
+        { "type": "Auction Payout", "amount": 24500, "date": "June 05, 2026" }
+      ]
+    }
+  }
+}

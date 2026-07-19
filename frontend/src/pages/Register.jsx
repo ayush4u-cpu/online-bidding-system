@@ -34,8 +34,6 @@ function Register() {
 
   return (
     <>
-      <Navbar />
-
       <div className="register-container">
         <div className="register-card">
           <h1>Register</h1>

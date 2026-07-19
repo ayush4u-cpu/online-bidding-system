@@ -2,49 +2,67 @@ import React from "react";
 import iphone from "../assets/iphone.jpeg";
 import ActiveStatus from "./ActiveStatus";
 import SoldStatus from "./SoldStatus";
-import ButtonOutlined from "../components/ButtonOutlined";
-function ProductRow() {
+
+const fallbackProduct = {
+  name: "iPhone 17 Pro",
+  category: "Electronics",
+  basePrice: 70000,
+  currentBid: 85250,
+  status: "ACTIVE",
+  endTime: "2026-08-30T22:00"
+};
+
+function ProductRow({ product = fallbackProduct }) {
+  const formatDate = (dateStr) => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
   return (
     <tr>
-      <td className="d-flex align-items-center">
-        <img
-          src={iphone}
-          alt=""
-          className="rounded mx-1"
-          style={{
-            width: "80px",
-            height: "80px",
-            objectFit: "cover",
-            objectPosition: "top",
-          }}
-        />
-        <div className="mx-1 d-flex align-items-center">
+      <td>
+        <div className="d-flex align-items-center">
+          <img
+            src={product.image || iphone}
+            alt={product.name}
+            className="rounded mx-2"
+            style={{
+              width: "60px",
+              height: "60px",
+              objectFit: "cover"
+            }}
+          />
           <div>
-            <div className=" fw-bold">iPhone 17 Pro</div>
+            <div className="fw-bold">{product.name}</div>
             <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>
-              Smartphone
+              {product.category}
             </div>
           </div>
         </div>
       </td>
       <td>
-        <div className="d-flex align-items-center">₹70,000</div>
+        <div className="py-3">₹{product.basePrice.toLocaleString()}</div>
       </td>
-      <td className="fw-bold" style={{ color: "var(--blue-primary)" }}>
-        ₹85,250
+      <td className="fw-bold py-3 text-primary">
+        ₹{product.currentBid.toLocaleString()}
       </td>
       <td>
-        <ActiveStatus />
+        <div className="py-2">
+          {product.status === "ACTIVE" ? <ActiveStatus /> : <SoldStatus />}
+        </div>
       </td>
-      <td style={{ color: "var(--text-secondary)" }}>28 May, 2025, 10:00 PM</td>
-      <td className="d-flex justify-content-center align-items-center">
-        {/* <div className="d-flex">
-          <ButtonOutlined
-            color={"var(--blue-primary)"}
-            logo={""}
-            text={"View Details"}
-          />
-        </div> */}
+      <td style={{ color: "var(--text-secondary)" }}>
+        <div className="py-3">{formatDate(product.endTime)}</div>
       </td>
     </tr>
   );
