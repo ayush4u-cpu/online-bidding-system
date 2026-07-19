@@ -25,7 +25,9 @@ function Navbar() {
 
   const getDashboardPath = () => {
     if (!user) return "/";
-    return user.role === "SELLER" ? "/seller/dashboard" : "/buyer/dashboard";
+    if (user.role === "SELLER") return "/seller/dashboard";
+    if (user.role === "DELIVERY") return "/delivery";
+    return "/buyer/dashboard";
   };
 
   return (
@@ -39,6 +41,29 @@ function Navbar() {
             <span style={{ fontSize: "0.9rem", color: "#ccc" }}>
               Welcome, <strong className="text-white">{user.name}</strong> ({user.role})
             </span>
+            
+            {/* Conditional Wallet link for Buyer and Seller */}
+            {(user.role === "BUYER" || user.role === "SELLER") && (
+              <button
+                onClick={() => navigate(user.role === "BUYER" ? "/buyer-wallet" : "/seller-wallet")}
+                style={{ backgroundColor: "#6f42c1" }}
+                className="text-white rounded-1 border-0 px-3 py-1.5"
+              >
+                My Wallet
+              </button>
+            )}
+
+            {/* Conditional Delivery Dashboard link */}
+            {user.role === "DELIVERY" && (
+              <button
+                onClick={() => navigate("/delivery")}
+                style={{ backgroundColor: "var(--green-primary)" }}
+                className="text-white rounded-1 border-0 px-3 py-1.5"
+              >
+                Deliveries
+              </button>
+            )}
+
             <button
               onClick={() => navigate(getDashboardPath())}
               style={{ backgroundColor: "var(--blue-primary)" }}
@@ -46,6 +71,7 @@ function Navbar() {
             >
               Dashboard
             </button>
+            
             <button
               onClick={handleLogout}
               style={{ backgroundColor: "#dc3545" }}

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import iphone from "../assets/iphone.jpeg";
 import Button from "./Button";
 import bid from "../assets/bid.png";
-import { placeBid } from "../utils/db";
 
 const fallbackProduct = {
   id: 1,
@@ -17,50 +16,23 @@ const fallbackProduct = {
   status: "ACTIVE"
 };
 
-function ProductCard({ product = fallbackProduct, onBidPlaced }) {
+function ProductCard({ product = fallbackProduct }) {
   const navigate = useNavigate();
-  const userName = sessionStorage.getItem("loggedInUserName");
-  const userRole = sessionStorage.getItem("loggedInUserRole");
 
-  const handleBidClick = () => {
-    if (!userName) {
-      alert("You must be logged in to place a bid.");
-      navigate("/login");
-      return;
-    }
-
-    if (userRole !== "BUYER") {
-      alert("Only buyers are allowed to place bids.");
-      return;
-    }
-
-    const newBidAmount = window.prompt(
-      `Enter your bid amount for ${product.name} (Current Bid: ₹${product.currentBid}):`
-    );
-
-    if (newBidAmount === null) return; // User cancelled
-
-    const res = placeBid(product.id, newBidAmount, userName);
-    if (res.success) {
-      alert(`Bid placed successfully! New bid: ₹${res.auction.currentBid}`);
-      if (onBidPlaced) {
-        onBidPlaced();
-      }
-    } else {
-      alert(res.message || "Failed to place bid.");
-    }
+  const handleCardClick = () => {
+    navigate(`/product/${product.id}`);
   };
 
   return (
-    <div className="auction-card mx-2 my-2" style={{ width: "290px" }}>
+    <div className="auction-card mx-2 my-2" style={{ width: "290px", cursor: "pointer" }} onClick={handleCardClick}>
       <img
-        src={product.image || iphone}
-        alt={product.name}
+        src={product.imageSrc || product.image || iphone}
+        alt={product.name || product.title}
         className="auction-image"
         style={{ height: "160px", objectFit: "cover" }}
       />
       <div className="card-content">
-        <h3 className="fs-5 fw-bold text-center text-truncate">{product.name}</h3>
+        <h3 className="fs-5 fw-bold text-center text-truncate">{product.name || product.title}</h3>
         <p className="description text-muted text-center" style={{ fontSize: "0.85rem", height: "60px", overflow: "hidden" }}>
           {product.description}
         </p>
@@ -79,13 +51,13 @@ function ProductCard({ product = fallbackProduct, onBidPlaced }) {
             <div className="current-bid">₹{product.currentBid.toLocaleString()}</div>
           </div>
         </div>
-        <div className="mt-3">
+        <div className="mt-3" onClick={(e) => e.stopPropagation()}>
           <Button
             color={"var(--blue-primary)"}
             logo={bid}
             hover={"blue"}
             text={"View & Bid"}
-            onClick={handleBidClick}
+            onClick={handleCardClick}
           />
         </div>
       </div>

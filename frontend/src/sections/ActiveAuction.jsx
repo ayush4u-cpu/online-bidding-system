@@ -33,12 +33,11 @@ function ActiveAuction() {
           </div>
         </div>
       </div>
-      <div className="d-flex justify-content-center flex-wrap gap-3">
+      <div className="d-flex justify-content-center flex-wrap gap-4 py-3">
         {auctions.map((auction) => (
           <ProductCard 
             key={auction.id} 
             product={auction} 
-            onBidPlaced={loadAuctions} 
           />
         ))}
         {auctions.length === 0 && (
