@@ -53,8 +53,8 @@ function AddProductForm({ onProductAdded }) {
       <div className="card p-4">
         <h4 className="px-2">Add Product for Auction</h4>
         <div className="container mt-1">
-          <div className="row">
-            <div className="col-4">
+          <div className="row g-3">
+            <div className="col-12 col-md-4">
               <label htmlFor="pname" className="form-label">
                 Product Name
               </label>
@@ -69,7 +69,7 @@ function AddProductForm({ onProductAdded }) {
               />
             </div>
 
-            <div className="col-4">
+            <div className="col-12 col-md-4">
               <label htmlFor="pcategory" className="form-label">
                 Select Category
               </label>
@@ -90,7 +90,7 @@ function AddProductForm({ onProductAdded }) {
               </select>
             </div>
 
-            <div className="col-4">
+            <div className="col-12 col-md-4">
               <label htmlFor="basePrice" className="form-label">
                 Base Price (₹)
               </label>
@@ -105,8 +105,8 @@ function AddProductForm({ onProductAdded }) {
               />
             </div>
           </div>
-          <div className="row mt-3">
-            <div className="col-6">
+          <div className="row mt-1 g-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="pdesc" className="form-label">
                 Product Description
               </label>
@@ -121,7 +121,7 @@ function AddProductForm({ onProductAdded }) {
                 required
               ></textarea>
             </div>
-            <div className="col-6">
+            <div className="col-12 col-md-6">
               <label htmlFor="pdate" className="form-label">
                 Auction End Time
               </label>

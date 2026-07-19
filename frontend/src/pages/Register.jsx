@@ -77,7 +77,7 @@ function Register() {
             <option>DELIVERY</option>
           </select>
 
-          <div onClick={handleRegister}>
+          <div className="my-3" onClick={handleRegister}>
             <Button
               color={"var(--green-primary)"}
               logo={register}

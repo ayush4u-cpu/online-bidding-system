@@ -6,7 +6,9 @@
 }
 
 .register-card {
-  width: 650px;
+  width: 100%;
+  max-width: 650px;
+  margin: 0 15px;
 
   background: white;
 
