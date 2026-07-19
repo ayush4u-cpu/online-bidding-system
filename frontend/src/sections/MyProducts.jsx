@@ -19,7 +19,7 @@ function MyProducts({ refreshTrigger }) {
     <div className="card p-4">
       <h4 className="px-2">My Products</h4>
       <div className="container mt-1">
-        <div className="d-flex justify-content-start mt-3">
+        <div className="table-responsive mt-3">
           <table className="table align-middle">
             <thead>
               <tr>

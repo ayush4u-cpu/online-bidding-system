@@ -73,7 +73,7 @@ function AdminDashboard() {
       {/* Stats Cards Row */}
       <div className="row g-4 mb-4">
         {/* Card 1: Users */}
-        <div className="col-md-3">
+        <div className="col-12 col-sm-6 col-lg-3">
           <div className="card h-100 p-3 border shadow-sm d-flex flex-row align-items-center gap-3">
             <div 
               style={{ width: "60px", height: "60px", backgroundColor: "#e8f0fe", borderRadius: "12px" }}
@@ -89,7 +89,7 @@ function AdminDashboard() {
         </div>
 
         {/* Card 2: Products */}
-        <div className="col-md-3">
+        <div className="col-12 col-sm-6 col-lg-3">
           <div className="card h-100 p-3 border shadow-sm d-flex flex-row align-items-center gap-3">
             <div 
               style={{ width: "60px", height: "60px", backgroundColor: "#e6f4ea", borderRadius: "12px" }}
@@ -105,7 +105,7 @@ function AdminDashboard() {
         </div>
 
         {/* Card 3: Bids */}
-        <div className="col-md-3">
+        <div className="col-12 col-sm-6 col-lg-3">
           <div className="card h-100 p-3 border shadow-sm d-flex flex-row align-items-center gap-3">
             <div 
               style={{ width: "60px", height: "60px", backgroundColor: "#f3e8fd", borderRadius: "12px" }}
@@ -121,7 +121,7 @@ function AdminDashboard() {
         </div>
 
         {/* Card 4: Revenue */}
-        <div className="col-md-3">
+        <div className="col-12 col-sm-6 col-lg-3">
           <div className="card h-100 p-3 border shadow-sm d-flex flex-row align-items-center gap-3">
             <div 
               style={{ width: "60px", height: "60px", backgroundColor: "#fef3d6", borderRadius: "12px" }}
@@ -142,7 +142,7 @@ function AdminDashboard() {
         <h4 className="fw-bold mb-3">{editingId ? "Edit Category" : "Add Category"}</h4>
         <form onSubmit={handleSubmit}>
           <div className="row g-3">
-            <div className="col-md-4 text-start">
+            <div className="col-12 col-md-4 text-start">
               <label htmlFor="catName" className="form-label small fw-semibold">Category Name</label>
               <input
                 type="text"
@@ -154,7 +154,7 @@ function AdminDashboard() {
                 required
               />
             </div>
-            <div className="col-md-8 text-start">
+            <div className="col-12 col-md-8 text-start">
               <label htmlFor="catDesc" className="form-label small fw-semibold">Description</label>
               <textarea
                 id="catDesc"

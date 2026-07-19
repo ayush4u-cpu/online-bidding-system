@@ -5,6 +5,7 @@ function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const name = sessionStorage.getItem("loggedInUserName");
@@ -14,6 +15,7 @@ function Navbar() {
     } else {
       setUser(null);
     }
+    setIsOpen(false); // Close mobile menu on page navigation
   }, [location]);
 
   const handleLogout = () => {
@@ -32,84 +34,98 @@ function Navbar() {
   };
 
   return (
-    <div className="bg-black text-white py-3 px-4 d-flex justify-content-between fixed-top align-items-center">
-      <Link to="/" className="text-white text-decoration-none fw-bold fs-5">
-        Online Bidding
-      </Link>
-      <div>
-        {user ? (
-          <div className="d-flex align-items-center gap-3">
-            <span style={{ fontSize: "0.9rem", color: "#ccc" }}>
-              Welcome, <strong className="text-white">{user.name}</strong> ({user.role})
-            </span>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-black fixed-top py-3 px-4">
+      <div className="container-fluid p-0">
+        <Link to="/" className="navbar-brand fw-bold fs-5 text-white m-0">
+          Online Bidding
+        </Link>
+        <button
+          className="navbar-toggler border-secondary"
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-expanded={isOpen}
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
-            {/* Conditional Wallet link for Buyer and Seller */}
-            {(user.role === "BUYER" || user.role === "SELLER") && (
-              <button
-                onClick={() => navigate(user.role === "BUYER" ? "/buyer-wallet" : "/seller-wallet")}
-                style={{ backgroundColor: "#6f42c1" }}
-                className="text-white rounded-1 border-0 px-3 py-2"
-              >
-                My Wallet
-              </button>
+        <div className={`collapse navbar-collapse justify-content-end ${isOpen ? "show" : ""}`} id="navbarNav">
+          <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3 mt-3 mt-lg-0 w-100 justify-content-end">
+            {user ? (
+              <>
+                <span className="text-white-50 small my-1 my-lg-0 text-start text-lg-end">
+                  Welcome, <strong className="text-white">{user.name}</strong> ({user.role})
+                </span>
+
+                {/* Conditional Wallet link for Buyer and Seller */}
+                {(user.role === "BUYER" || user.role === "SELLER") && (
+                  <button
+                    onClick={() => navigate(user.role === "BUYER" ? "/buyer-wallet" : "/seller-wallet")}
+                    style={{ backgroundColor: "#6f42c1" }}
+                    className="text-white rounded-1 border-0 px-3 py-2 text-center"
+                  >
+                    My Wallet
+                  </button>
+                )}
+
+                {/* Conditional Admin Wallet balance */}
+                {user.role === "ADMIN" && (
+                  <span className="text-light small border border-secondary rounded px-3 py-2 bg-dark text-center">
+                    💳 Wallet (₹1,25,600)
+                  </span>
+                )}
+
+                {/* Conditional Delivery Dashboard link */}
+                {user.role === "DELIVERY" && (
+                  <button
+                    onClick={() => navigate("/delivery")}
+                    style={{ backgroundColor: "var(--green-primary)" }}
+                    className="text-white rounded-1 border-0 px-3 py-2 text-center"
+                  >
+                    Deliveries
+                  </button>
+                )}
+
+                <button
+                  onClick={() => navigate(getDashboardPath())}
+                  style={{ backgroundColor: "var(--blue-primary)" }}
+                  className="text-white rounded-1 border-0 px-3 py-2 btn-hover-blue text-center"
+                >
+                  {user.role === "ADMIN" ? "Dashboard (Admin)" : "Dashboard"}
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  style={{ backgroundColor: "#dc3545" }}
+                  className="text-white rounded-1 border-0 px-3 py-2 text-center"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <div className="d-flex gap-2 justify-content-start justify-content-lg-end mt-2 mt-lg-0">
+                <button
+                  onClick={() => navigate("/login")}
+                  style={{
+                    backgroundColor: "var(--blue-primary)",
+                  }}
+                  className="text-white rounded-1 border-0 px-3 py-2 btn-hover-blue flex-grow-1 flex-lg-grow-0 text-center"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => navigate("/register")}
+                  style={{ backgroundColor: "var(--green-primary)" }}
+                  className="text-white rounded-1 border-0 px-3 py-2 btn-hover-green flex-grow-1 flex-lg-grow-0 text-center"
+                >
+                  Register
+                </button>
+              </div>
             )}
-
-            {/* Conditional Admin Wallet balance */}
-            {user.role === "ADMIN" && (
-              <span className="text-light small border border-secondary rounded px-3 py-2 bg-dark">
-                💳 Wallet (₹1,25,600)
-              </span>
-            )}
-
-            {/* Conditional Delivery Dashboard link */}
-            {user.role === "DELIVERY" && (
-              <button
-                onClick={() => navigate("/delivery")}
-                style={{ backgroundColor: "var(--green-primary)" }}
-                className="text-white rounded-1 border-0 px-3 py-2"
-              >
-                Deliveries
-              </button>
-            )}
-
-            <button
-              onClick={() => navigate(getDashboardPath())}
-              style={{ backgroundColor: "var(--blue-primary)" }}
-              className="text-white rounded-1 border-0 px-3 py-2 btn-hover-blue"
-            >
-              {user.role === "ADMIN" ? "Dashboard (Admin)" : "Dashboard"}
-            </button>
-
-            <button
-              onClick={handleLogout}
-              style={{ backgroundColor: "#dc3545" }}
-              className="text-white rounded-1 border-0 px-3 py-2"
-            >
-              Logout
-            </button>
           </div>
-        ) : (
-          <>
-            <button
-              onClick={() => navigate("/login")}
-              style={{
-                backgroundColor: "var(--blue-primary)",
-              }}
-              className="text-white rounded-1 border-0 px-3 py-2 mx-1 btn-hover-blue"
-            >
-              Login
-            </button>
-            <button
-              onClick={() => navigate("/register")}
-              style={{ backgroundColor: "var(--green-primary)" }}
-              className="text-white rounded-1 border-0 px-3 py-2 mx-1 btn-hover-green"
-            >
-              Register
-            </button>
-          </>
-        )}
+        </div>
       </div>
-    </div>
+    </nav>
   );
 }
 
