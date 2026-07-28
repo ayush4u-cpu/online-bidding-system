@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import bidIcon from "../assets/bid.png";
 import { getAuctions, placeBid } from "../utils/db";
+import { createWebSocketClient } from "../utils/websocket";
 
 function ProductDescription() {
   const { id } = useParams();
@@ -20,6 +21,23 @@ function ProductDescription() {
 
   useEffect(() => {
     loadProduct();
+
+    const disconnect = createWebSocketClient((bidUpdate) => {
+      // Receive bid updates in real time and update only the currentBid state
+      setProduct((prevProduct) => {
+        if (!prevProduct || String(prevProduct.id) !== String(bidUpdate.auctionId)) {
+          return prevProduct;
+        }
+        return {
+          ...prevProduct,
+          currentBid: Number(bidUpdate.amount)
+        };
+      });
+    }, id);
+
+    return () => {
+      disconnect();
+    };
   }, [id]);
 
   if (!product) {
