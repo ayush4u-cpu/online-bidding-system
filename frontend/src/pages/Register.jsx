@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Button from "../components/Button";
@@ -27,6 +27,12 @@ function Register() {
     console.log(registeredUser);
 
     sessionStorage.setItem("registeredUser", JSON.stringify(registeredUser));
+
+    // Also save to localStorage users list for Admin Dashboard
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const newId = "USR-" + String(users.length + 1).padStart(3, '0');
+    users.push({ id: newId, ...registeredUser });
+    localStorage.setItem("users", JSON.stringify(users));
 
     alert("Registration Successful!");
     navigate("/login");

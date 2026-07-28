@@ -179,7 +179,7 @@ const defaultDeliveries = [
 
 const defaultWallets = {
   buyer: {
-    balance: 150000,
+    balance: 0,
     transactions: [
       { type: "Deposit", amount: 50000, date: "June 08, 2026" },
       { type: "Auction Bid Hold", amount: -85250, date: "June 07, 2026" },
@@ -187,7 +187,7 @@ const defaultWallets = {
     ]
   },
   seller: {
-    balance: 725000,
+    balance: 0,
     transactions: [
       { type: "Auction Payout", amount: 82000, date: "June 06, 2026" },
       { type: "Auction Payout", amount: 24500, date: "June 05, 2026" }
@@ -211,6 +211,12 @@ export function initDb() {
   if (!localStorage.getItem("orders")) {
     localStorage.setItem("orders", JSON.stringify(defaultOrders));
   }
+  if (!localStorage.getItem("users")) {
+    localStorage.setItem("users", JSON.stringify(defaultUsers));
+  }
+  if (!localStorage.getItem("bids")) {
+    localStorage.setItem("bids", JSON.stringify(defaultBids));
+  }
 }
 
 export function getAuctions() {
@@ -218,7 +224,7 @@ export function getAuctions() {
   const list = JSON.parse(localStorage.getItem("auctions")) || [];
   return list.map(item => ({
     ...item,
-    imageSrc: imageMap[item.image] || item.imageSrc || ""
+    imageSrc: item.image && String(item.image).startsWith("data:") ? item.image : (imageMap[item.image] || item.imageSrc || "")
   }));
 }
 
@@ -237,6 +243,7 @@ export function addAuction(product) {
     description: product.description,
     image: product.image || "",
     endTime: product.endTime,
+    startTime: product.startTime || new Date().toISOString(),
     status: "ACTIVE",
     seller: sessionStorage.getItem("loggedInUserName") || "Seller"
   };
@@ -252,7 +259,7 @@ export function placeBid(productId, amount, buyerName) {
   if (index === -1) {
     return { success: false, message: "Product not found" };
   }
-  
+
   const auction = auctions[index];
   if (auction.status !== "ACTIVE") {
     return { success: false, message: "This auction is no longer active." };
@@ -274,6 +281,18 @@ export function placeBid(productId, amount, buyerName) {
   };
 
   localStorage.setItem("auctions", JSON.stringify(auctions));
+
+  const bids = JSON.parse(localStorage.getItem("bids")) || [];
+  const newBidId = "BID-" + String(bids.length + 1).padStart(3, '0');
+  bids.push({
+    id: newBidId,
+    productId: auction.id,
+    productName: auction.name,
+    bidderName: buyerName,
+    bidAmount: bidAmount,
+    bidTime: new Date().toISOString()
+  });
+  localStorage.setItem("bids", JSON.stringify(bids));
 
   // Deduct/hold money from buyer's wallet (optional, but very neat!)
   const wallets = JSON.parse(localStorage.getItem("wallets")) || defaultWallets;
@@ -411,4 +430,87 @@ export function updateCategory(id, updatedCat) {
 export function getOrders() {
   initDb();
   return JSON.parse(localStorage.getItem("orders")) || [];
+}
+
+const defaultUsers = [
+  { id: "USR-001", name: "Admin User", email: "admin@mail.com", password: "admin123", role: "ADMIN" },
+  { id: "USR-002", name: "Amit Kumar", email: "amit@mail.com", password: "password123", role: "BUYER" },
+  { id: "USR-003", name: "Priya Sharma", email: "priya@mail.com", password: "password123", role: "BUYER" },
+  { id: "USR-004", name: "Siddharth R.", email: "siddharth@mail.com", password: "password123", role: "BUYER" },
+  { id: "USR-005", name: "Heritage Horology", email: "heritage@mail.com", password: "password123", role: "SELLER" },
+  { id: "USR-006", name: "GameZone Retail", email: "gamezone@mail.com", password: "password123", role: "SELLER" },
+  { id: "USR-007", name: "Ramesh Kumar", email: "ramesh@mail.com", password: "password123", role: "DELIVERY" },
+  { id: "USR-008", name: "Suresh Yadav", email: "suresh@mail.com", password: "password123", role: "DELIVERY" }
+];
+
+const defaultBids = [
+  { id: "BID-001", productId: "iphone_17", productName: "iPhone 17 Pro", bidderName: "Amit Kumar", bidAmount: 85250, bidTime: "2026-07-28T14:30" },
+  { id: "BID-002", productId: "rolex_watch", productName: "Vintage Rolex Submariner", bidderName: "Priya Sharma", bidAmount: 510000, bidTime: "2026-07-28T15:00" },
+  { id: "BID-003", productId: "ps6_console", productName: "PlayStation 6 Console", bidderName: "Siddharth R.", bidAmount: 58000, bidTime: "2026-07-28T16:15" },
+  { id: "BID-004", productId: "tesla_model_s", productName: "Tesla Model S Toy Edition", bidderName: "Amit Kumar", bidAmount: 6200, bidTime: "2026-07-28T16:45" },
+  { id: "BID-005", productId: "macbook_pro", productName: "MacBook Pro M5 Max", bidderName: "Priya Sharma", bidAmount: 215000, bidTime: "2026-07-28T17:00" }
+];
+
+export function getUsers() {
+  initDb();
+  return JSON.parse(localStorage.getItem("users")) || [];
+}
+
+export function deleteUser(id) {
+  initDb();
+  let users = getUsers();
+  users = users.filter(u => String(u.id) !== String(id));
+  localStorage.setItem("users", JSON.stringify(users));
+  return users;
+}
+
+export function updateUser(id, updatedFields) {
+  initDb();
+  const users = getUsers();
+  const idx = users.findIndex(u => String(u.id) === String(id));
+  if (idx !== -1) {
+    users[idx] = { ...users[idx], ...updatedFields };
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+}
+
+export function getBids() {
+  initDb();
+  return JSON.parse(localStorage.getItem("bids")) || [];
+}
+
+export function deleteBid(id) {
+  initDb();
+  let bids = getBids();
+  bids = bids.filter(b => String(b.id) !== String(id));
+  localStorage.setItem("bids", JSON.stringify(bids));
+  return bids;
+}
+
+export function updateBid(id, updatedFields) {
+  initDb();
+  const bids = getBids();
+  const idx = bids.findIndex(b => String(b.id) === String(id));
+  if (idx !== -1) {
+    bids[idx] = { ...bids[idx], ...updatedFields };
+    localStorage.setItem("bids", JSON.stringify(bids));
+  }
+}
+
+export function deleteAuction(id) {
+  initDb();
+  let auctions = JSON.parse(localStorage.getItem("auctions")) || [];
+  auctions = auctions.filter(a => String(a.id) !== String(id));
+  localStorage.setItem("auctions", JSON.stringify(auctions));
+  return auctions;
+}
+
+export function updateAuction(id, updatedFields) {
+  initDb();
+  const auctions = JSON.parse(localStorage.getItem("auctions")) || [];
+  const idx = auctions.findIndex(a => String(a.id) === String(id));
+  if (idx !== -1) {
+    auctions[idx] = { ...auctions[idx], ...updatedFields };
+    localStorage.setItem("auctions", JSON.stringify(auctions));
+  }
 }
