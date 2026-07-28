@@ -1,15 +1,7 @@
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
-/**
- * Creates and initializes a STOMP WebSocket client using SockJS.
- *
- * @param {Function} onMessageReceived Callback executed when a new bid message is received.
- * @param {string|number} auctionId The ID of the auction room/topic to subscribe to.
- * @returns {Function} A cleanup function to cleanly disconnect when the component unmounts.
- */
-export const createWebSocketClient = (onMessageReceived, auctionId) => {
-  // Retrieve token from sessionStorage (tries common keys 'jwtToken' or 'token')
+    export const createWebSocketClient = (onMessageReceived, auctionId) => {
   const token = sessionStorage.getItem("jwtToken") || sessionStorage.getItem("token") || "";
 
   const stompClient = new Client({
@@ -21,7 +13,7 @@ export const createWebSocketClient = (onMessageReceived, auctionId) => {
     debug: function (str) {
       console.log("[STOMP Debug] ", str);
     },
-    reconnectDelay: 5000, // Handle auto-reconnection after 5s if drops
+    reconnectDelay: 5000, // Handle auto-reconnection after 5sec if drops
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000
   });
