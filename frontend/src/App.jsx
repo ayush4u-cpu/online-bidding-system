@@ -16,81 +16,91 @@ import MyOrders from "./pages/MyOrders";
 function App() {
   return (
     <Router>
-      <Navbar />
+      <div className="app-container">
+        {/* Background backdrop elements */}
+        <div className="home-blob home-blob-1"></div>
+        <div className="home-blob home-blob-2"></div>
+        <div className="home-blob home-blob-3"></div>
+        <div className="home-pattern"></div>
 
-      <Routes>
-        <Route path="/" element={<Home />} />
+        <Navbar />
 
-        <Route
-          path="/seller/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["SELLER"]}>
-              <div className="container">
-                <SellerDashboard />
-              </div>
-            </ProtectedRoute>
-          }
-        />
+        <div className="app-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        <Route
-          path="/buyer/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["BUYER"]}>
-              <BuyerDashboard />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/seller/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["SELLER"]}>
+                  <div className="container">
+                    <SellerDashboard />
+                  </div>
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/delivery"
-          element={
-            <ProtectedRoute allowedRoles={["DELIVERY"]}>
-              <DeliveryDashboard />
-            </ProtectedRoute>
-          }
-        />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            <Route
+              path="/buyer/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["BUYER"]}>
+                  <BuyerDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/buyer-wallet"
-          element={
-            <ProtectedRoute allowedRoles={["BUYER"]}>
-              <MyWallet role="buyer" />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/delivery"
+              element={
+                <ProtectedRoute allowedRoles={["DELIVERY"]}>
+                  <DeliveryDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/seller-wallet"
-          element={
-            <ProtectedRoute allowedRoles={["SELLER"]}>
-              <MyWallet role="seller" />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/buyer-wallet"
+              element={
+                <ProtectedRoute allowedRoles={["BUYER"]}>
+                  <MyWallet role="buyer" />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/seller-wallet"
+              element={
+                <ProtectedRoute allowedRoles={["SELLER"]}>
+                  <MyWallet role="seller" />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/orders"
-          element={
-            <ProtectedRoute allowedRoles={["BUYER"]}>
-              <MyOrders />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route path="/product/:id" element={<ProductDescription />} />
-      </Routes>
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute allowedRoles={["BUYER"]}>
+                  <MyOrders />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/product/:id" element={<ProductDescription />} />
+          </Routes>
+        </div>
+      </div>
     </Router>
   );
 }

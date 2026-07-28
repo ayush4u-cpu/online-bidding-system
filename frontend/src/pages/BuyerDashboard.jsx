@@ -25,7 +25,7 @@ function BuyerDashboard() {
 
   return (
     <>
-      <div className="dashboard-container">
+      <div className="main-content dashboard-container">
         {/* Header Section */}
         <div className="dashboard-header">
           <div>

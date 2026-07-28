@@ -19,6 +19,25 @@ function Login() {
       return;
     }
 
+    // Check localStorage users database
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const matchedUser = users.find(u => u.email === email && u.password === password);
+
+    if (matchedUser) {
+      sessionStorage.setItem("loggedInUserName", matchedUser.name);
+      sessionStorage.setItem("loggedInUserRole", matchedUser.role);
+      if (matchedUser.role === "ADMIN") {
+        navigate("/admin/dashboard");
+      } else if (matchedUser.role === "SELLER") {
+        navigate("/seller/dashboard");
+      } else if (matchedUser.role === "BUYER") {
+        navigate("/buyer/dashboard");
+      } else {
+        navigate("/delivery");
+      }
+      return;
+    }
+
     const storedUser = JSON.parse(sessionStorage.getItem("registeredUser"));
 
     if (storedUser && storedUser.email === email && storedUser.password === password) {

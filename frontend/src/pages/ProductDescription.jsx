@@ -80,7 +80,14 @@ function ProductDescription() {
         </div>
         <div className="col-md-6">
           <h1 className="fw-bold">{product.name || product.title}</h1>
-          <div className="badge bg-secondary mb-2">{product.category}</div>
+          <div className="d-flex align-items-center gap-2 mb-2">
+            <div className="badge bg-secondary">{product.category}</div>
+            {product.seller && (
+              <span className="text-muted small">
+                Seller: <strong>{product.seller}</strong>
+              </span>
+            )}
+          </div>
           <p className="text-muted leading-relaxed">{product.description}</p>
           
           {product.features && product.features.length > 0 && (

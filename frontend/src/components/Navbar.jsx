@@ -36,9 +36,15 @@ function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-black fixed-top py-3 px-4">
       <div className="container-fluid p-0">
-        <Link to="/" className="navbar-brand fw-bold fs-5 text-white m-0">
-          Online Bidding
-        </Link>
+        {user ? (
+          <span className="navbar-brand fw-bold fs-5 text-white m-0" style={{ cursor: "default" }}>
+            Online Bidding
+          </span>
+        ) : (
+          <Link to="/" className="navbar-brand fw-bold fs-5 text-white m-0">
+            Online Bidding
+          </Link>
+        )}
         <button
           className="navbar-toggler border-secondary"
           type="button"
@@ -66,13 +72,6 @@ function Navbar() {
                   >
                     My Wallet
                   </button>
-                )}
-
-                {/* Conditional Admin Wallet balance */}
-                {user.role === "ADMIN" && (
-                  <span className="text-light small border border-secondary rounded px-3 py-2 bg-dark text-center">
-                    💳 Wallet (₹1,25,600)
-                  </span>
                 )}
 
                 {/* Conditional Delivery Dashboard link */}

@@ -8,12 +8,56 @@ function AddProductForm({ onProductAdded }) {
   const [category, setCategory] = useState("");
   const [basePrice, setBasePrice] = useState("");
   const [description, setDescription] = useState("");
+  const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [image, setImage] = useState("");
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileInput = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleFile = (file) => {
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImage(e.target.result); // Base64 encoding
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImage("");
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!name || !category || !basePrice || !description || !endTime) {
+    if (!name || !category || !basePrice || !description || !startTime || !endTime) {
       alert("Please fill in all fields.");
       return;
     }
@@ -24,23 +68,32 @@ function AddProductForm({ onProductAdded }) {
       return;
     }
 
+    if (new Date(startTime) >= new Date(endTime)) {
+      alert("Auction Start Time must be before Auction End Time.");
+      return;
+    }
+
     const newProduct = {
       name,
       category,
       basePrice: price,
       description,
-      endTime
+      startTime,
+      endTime,
+      image
     };
 
     addAuction(newProduct);
     alert("Product added successfully for auction!");
-    
+
     // Reset Form
     setName("");
     setCategory("");
     setBasePrice("");
     setDescription("");
+    setStartTime("");
     setEndTime("");
+    setImage("");
 
     // Trigger state reload in parent
     if (onProductAdded) {
@@ -121,7 +174,20 @@ function AddProductForm({ onProductAdded }) {
                 required
               ></textarea>
             </div>
-            <div className="col-12 col-md-6">
+            <div className="col-12 col-md-3">
+              <label htmlFor="pstarttime" className="form-label">
+                Auction Start Time
+              </label>
+              <input
+                type="datetime-local"
+                id="pstarttime"
+                className="form-control"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                required
+              />
+            </div>
+            <div className="col-12 col-md-3">
               <label htmlFor="pdate" className="form-label">
                 Auction End Time
               </label>
@@ -135,6 +201,67 @@ function AddProductForm({ onProductAdded }) {
               />
             </div>
           </div>
+
+          {/* Image Drag and Drop Zone */}
+          <div className="row mt-3 g-3">
+            <div className="col-12 text-start">
+              <label className="form-label">Product Image</label>
+              <div
+                className="p-4 border rounded text-center d-flex flex-column align-items-center justify-content-center"
+                style={{
+                  borderStyle: "dashed",
+                  borderWidth: "2px",
+                  borderColor: dragActive ? "var(--blue-primary)" : "#ccc",
+                  backgroundColor: dragActive ? "#f0f4ff" : "#fafafa",
+                  transition: "all 0.2s ease-in-out",
+                  minHeight: "150px",
+                  position: "relative"
+                }}
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+              >
+                {image ? (
+                  <div className="d-flex flex-column align-items-center gap-2">
+                    <img
+                      src={image}
+                      alt="Product Preview"
+                      style={{ maxWidth: "120px", maxHeight: "120px", objectFit: "contain", borderRadius: "8px" }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger btn-sm px-3"
+                      onClick={removeImage}
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                ) : (
+                  <div className="d-flex flex-column align-items-center gap-2">
+                    <span className="fs-2">📤</span>
+                    <p className="mb-1 text-muted small">Drag & Drop product image here</p>
+                    <p className="mb-2 text-muted small">or</p>
+                    <label
+                      htmlFor="image-upload"
+                      className="btn btn-outline-primary btn-sm px-3 m-0"
+                      style={{ cursor: "pointer" }}
+                    >
+                      Browse Files
+                    </label>
+                    <input
+                      type="file"
+                      id="image-upload"
+                      accept="image/*"
+                      className="d-none"
+                      onChange={handleFileInput}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
         </div>
         <div className="d-flex justify-content-start mt-3">
           <div className="d-flex px-2">
