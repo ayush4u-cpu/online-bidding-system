@@ -12,6 +12,8 @@ function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [auctions, setAuctions] = useState([]);
   const [bids, setBids] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("ALL");
   
   // Navigation State
   const [activeView, setActiveView] = useState("categories");
@@ -106,6 +108,72 @@ function AdminDashboard() {
       }
     } catch (e) {
       console.error("Error loading bids:", e);
+    }
+
+    // Fetch orders
+    try {
+      const response = await fetch("http://localhost:8080/orders", {
+        headers: {
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+      if (response.ok) {
+        const oData = await response.json();
+        const mapped = await Promise.all(oData.map(async (order) => {
+          let productName = "Product";
+          let buyerName = "Buyer";
+          let sellerName = "Seller";
+
+          // Fetch product
+          try {
+            const prodRes = await fetch(`http://localhost:8080/products/${order.productId}`, {
+              headers: {
+                "Authorization": token ? `Bearer ${token}` : ""
+              }
+            });
+            if (prodRes.ok) {
+              const prodData = await prodRes.json();
+              if (prodData) productName = prodData.name;
+            }
+          } catch (e) {}
+
+          // Fetch buyer
+          try {
+            const buyerRes = await fetch(`http://localhost:8080/users/${order.buyerId}`, {
+              headers: {
+                "Authorization": token ? `Bearer ${token}` : ""
+              }
+            });
+            if (buyerRes.ok) {
+              const buyerData = await buyerRes.json();
+              if (buyerData) buyerName = buyerData.name;
+            }
+          } catch (e) {}
+
+          // Fetch seller
+          try {
+            const sellerRes = await fetch(`http://localhost:8080/users/${order.sellerId}`, {
+              headers: {
+                "Authorization": token ? `Bearer ${token}` : ""
+              }
+            });
+            if (sellerRes.ok) {
+              const sellerData = await sellerRes.json();
+              if (sellerData) sellerName = sellerData.name;
+            }
+          } catch (e) {}
+
+          return {
+            ...order,
+            productName,
+            buyerName,
+            sellerName
+          };
+        }));
+        setOrders(mapped);
+      }
+    } catch (e) {
+      console.error("Error loading orders in admin:", e);
     }
   };
 
@@ -512,6 +580,15 @@ function AdminDashboard() {
               🔨 Bids
             </button>
           </li>
+          <li className="nav-item">
+            <button 
+              className={`nav-link px-4 py-2 fw-semibold d-flex align-items-center gap-2 ${activeView === "orders" ? "active bg-black text-white" : "text-dark bg-light border"}`}
+              onClick={() => setActiveView("orders")}
+              style={{ borderRadius: "8px" }}
+            >
+              📋 Orders
+            </button>
+          </li>
         </ul>
       </div>
 
@@ -888,7 +965,6 @@ function AdminDashboard() {
                   <th className="py-2.5">Name</th>
                   <th className="py-2.5">Category</th>
                   <th className="py-2.5">Base Price</th>
-                  <th className="py-2.5">Current Bid</th>
                   <th className="py-2.5">End Time</th>
                   <th className="py-2.5">Status</th>
                   <th className="px-3 py-2.5 text-center" style={{ width: "220px" }}>Actions</th>
@@ -901,7 +977,6 @@ function AdminDashboard() {
                     <td className="py-3 fw-semibold">{prod.name}</td>
                     <td className="py-3 text-muted">{prod.category}</td>
                     <td className="py-3">₹{prod.basePrice.toLocaleString("en-IN")}</td>
-                    <td className="py-3 text-success fw-semibold">₹{prod.currentBid.toLocaleString("en-IN")}</td>
                     <td className="py-3 text-muted" style={{ fontSize: "0.85rem" }}>
                       {new Date(prod.endTime).toLocaleString("en-IN", {
                         day: "numeric",
@@ -979,6 +1054,79 @@ function AdminDashboard() {
                 {bids.length === 0 && (
                   <tr>
                     <td colSpan="6" className="text-center py-4 text-muted">No bids found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Table: Orders */}
+      {activeView === "orders" && (
+        <div className="card p-4 border shadow-sm">
+          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h4 className="fw-bold mb-0">Orders</h4>
+            <div className="d-flex align-items-center gap-2">
+              <label className="small fw-semibold text-muted mb-0">Filter Status:</label>
+              <select
+                className="form-select form-select-sm"
+                style={{ width: "150px" }}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="PENDING">PENDING</option>
+                <option value="ASSIGNED">ASSIGNED</option>
+                <option value="DISPATCHED">DISPATCHED</option>
+                <option value="DELIVERED">DELIVERED</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="table-responsive">
+            <table className="table align-middle table-hover">
+              <thead className="table-light">
+                <tr style={{ fontSize: "0.9rem" }} className="text-muted">
+                  <th className="px-3 py-2.5" style={{ width: "120px" }}>Order ID</th>
+                  <th className="py-2.5">Product Name</th>
+                  <th className="py-2.5">Buyer Name</th>
+                  <th className="py-2.5">Seller Name</th>
+                  <th className="py-2.5">Price</th>
+                  <th className="py-2.5">Delivery Partner</th>
+                  <th className="py-2.5 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders
+                  .filter(o => {
+                    if (statusFilter === "ALL") return true;
+                    return (o.status || o.deliveryStatus || "").toUpperCase() === statusFilter.toUpperCase();
+                  })
+                  .map((ord) => (
+                    <tr key={ord.id}>
+                      <td className="px-3 py-3 fw-bold text-secondary">{ord.id}</td>
+                      <td className="py-3 fw-semibold">{ord.productName}</td>
+                      <td className="py-3 text-muted">{ord.buyerName}</td>
+                      <td className="py-3 text-muted">{ord.sellerName}</td>
+                      <td className="py-3 fw-semibold text-success">₹{ord.finalPrice.toLocaleString("en-IN")}</td>
+                      <td className="py-3 text-secondary fw-semibold">{ord.deliveryPersonName || "Not Assigned"}</td>
+                      <td className="py-3 text-center">
+                        <span className={`badge rounded-pill px-3 py-1.5 ${
+                          (ord.status || "").toUpperCase() === "DELIVERED" ? "bg-success" :
+                          (ord.status || "").toUpperCase() === "DISPATCHED" ? "bg-primary" : "bg-warning text-dark"
+                        }`}>
+                          {ord.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                {orders.filter(o => {
+                  if (statusFilter === "ALL") return true;
+                  return (o.status || o.deliveryStatus || "").toUpperCase() === statusFilter.toUpperCase();
+                }).length === 0 && (
+                  <tr>
+                    <td colSpan="7" className="text-center py-4 text-muted">No orders found matching the filter.</td>
                   </tr>
                 )}
               </tbody>

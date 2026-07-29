@@ -104,7 +104,8 @@ function MyOrders() {
             image: image,
             price: order.finalPrice,
             status: order.status,
-            deliveryPerson: order.deliveryPersonId ? "Assigned" : "Not Assigned"
+            deliveryPersonName: order.deliveryPersonName || "Not Assigned",
+            estimatedDelivery: order.estimatedDelivery
           };
         }));
         setOrders(mapped);
@@ -212,7 +213,12 @@ function MyOrders() {
 
                       {/* Delivery Person */}
                       <td className="px-4 py-3 text-secondary fw-semibold">
-                        {order.deliveryPerson}
+                        {order.deliveryPersonName}
+                        {order.estimatedDelivery && (
+                          <div className="text-muted fw-normal" style={{ fontSize: "0.72rem" }}>
+                            Est: {new Date(order.estimatedDelivery).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))

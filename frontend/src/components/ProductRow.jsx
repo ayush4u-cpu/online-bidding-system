@@ -12,7 +12,66 @@ const fallbackProduct = {
   endTime: "2026-08-30T22:00"
 };
 
-function ProductRow({ product = fallbackProduct }) {
+function ProductRow({ product = fallbackProduct, deliveryPartners = [], onAssignSuccess }) {
+  const [selectedPartnerId, setSelectedPartnerId] = React.useState("");
+  const [isAssigning, setIsAssigning] = React.useState(false);
+
+  const handleAssign = async () => {
+    if (!selectedPartnerId) {
+      alert("Please select a delivery partner first!");
+      return;
+    }
+    setIsAssigning(true);
+    try {
+      const token = sessionStorage.getItem("token");
+      let oId = product.orderId;
+      if (!oId) {
+        const createRes = await fetch("http://localhost:8080/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": token ? `Bearer ${token}` : ""
+          },
+          body: JSON.stringify({
+            productId: product.id,
+            buyerId: product.winnerId,
+            sellerId: product.sellerId,
+            finalPrice: product.currentBid,
+            status: "PENDING"
+          })
+        });
+        if (createRes.ok) {
+          const newOrder = await createRes.json();
+          oId = newOrder.id;
+        } else {
+          throw new Error("Failed to create order");
+        }
+      }
+
+      const assignRes = await fetch(`http://localhost:8080/orders/${oId}/assign-delivery`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : ""
+        },
+        body: JSON.stringify({
+          deliveryPersonId: Number(selectedPartnerId)
+        })
+      });
+      if (assignRes.ok) {
+        alert("Delivery partner assigned successfully!");
+        if (onAssignSuccess) onAssignSuccess();
+      } else {
+        alert("Failed to assign delivery partner.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error assigning delivery partner.");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
   const formatDate = (dateStr) => {
     try {
       const date = new Date(dateStr);
@@ -113,6 +172,42 @@ function ProductRow({ product = fallbackProduct }) {
       </td>
       <td style={{ color: "var(--text-secondary)" }}>
         <div className="py-3">{formatDate(product.endTime)}</div>
+      </td>
+      <td>
+        <div className="py-2">
+          {product.deliveryPersonName ? (
+            <span className="text-success fw-bold">
+              Assigned to: {product.deliveryPersonName} <br />
+              <small className="text-secondary">({product.deliveryStatus || "ASSIGNED"})</small>
+            </span>
+          ) : (isEnded && hasBids) ? (
+            <div className="d-flex gap-2 align-items-center">
+              <select
+                className="form-select form-select-sm"
+                style={{ width: "160px" }}
+                value={selectedPartnerId}
+                onChange={(e) => setSelectedPartnerId(e.target.value)}
+                disabled={isAssigning}
+              >
+                <option value="">Assign Partner</option>
+                {deliveryPartners.map((partner) => (
+                  <option key={partner.id} value={partner.id}>
+                    {partner.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={handleAssign}
+                disabled={isAssigning || !selectedPartnerId}
+              >
+                {isAssigning ? "..." : "Assign"}
+              </button>
+            </div>
+          ) : (
+            <span className="text-muted small">-</span>
+          )}
+        </div>
       </td>
     </tr>
   );
