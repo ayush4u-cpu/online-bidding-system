@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Button from "../components/Button";
 import add from "../assets/add.png";
-import { addAuction } from "../utils/db";
 
 function AddProductForm({ onProductAdded }) {
   const [name, setName] = useState("");
@@ -54,7 +53,7 @@ function AddProductForm({ onProductAdded }) {
     setImage("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!name || !category || !basePrice || !description || !startTime || !endTime) {
@@ -73,31 +72,61 @@ function AddProductForm({ onProductAdded }) {
       return;
     }
 
-    const newProduct = {
-      name,
-      category,
-      basePrice: price,
-      description,
-      startTime,
-      endTime,
-      image
-    };
+    const token = sessionStorage.getItem("token");
+    const loggedInUserId = sessionStorage.getItem("loggedInUserId");
 
-    addAuction(newProduct);
-    alert("Product added successfully for auction!");
+    try {
+      const response = await fetch("http://localhost:8080/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : ""
+        },
+        body: JSON.stringify({
+          name,
+          description,
+          imageUrl: image || "",
+          basePrice: price,
+          auctionStartTime: startTime,
+          auctionEndTime: endTime,
+          sellerId: loggedInUserId ? Number(loggedInUserId) : null,
+          categoryId: 1 // Default category ID mapping
+        })
+      });
 
-    // Reset Form
-    setName("");
-    setCategory("");
-    setBasePrice("");
-    setDescription("");
-    setStartTime("");
-    setEndTime("");
-    setImage("");
+      if (response.ok) {
+        alert("Product added successfully for auction!");
+        // Reset Form
+        setName("");
+        setCategory("");
+        setBasePrice("");
+        setDescription("");
+        setStartTime("");
+        setEndTime("");
+        setImage("");
 
-    // Trigger state reload in parent
-    if (onProductAdded) {
-      onProductAdded();
+        // Trigger state reload in parent
+        if (onProductAdded) {
+          onProductAdded();
+        }
+      } else {
+        const errorText = await response.text();
+        let errorMessage = "Failed to add product";
+        try {
+          const errJson = JSON.parse(errorText);
+          if (errJson.errors && Array.isArray(errJson.errors)) {
+            errorMessage = errJson.errors.map(err => err.defaultMessage || JSON.stringify(err)).join(", ");
+          } else {
+            errorMessage = errJson.message || errJson.error || JSON.stringify(errJson) || errorMessage;
+          }
+        } catch (e) {
+          errorMessage = errorText || errorMessage;
+        }
+        alert(errorMessage);
+      }
+    } catch (error) {
+      console.error("Add product error:", error);
+      alert("Error connecting to server: " + error.message);
     }
   };
 

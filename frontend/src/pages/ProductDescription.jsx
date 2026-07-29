@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import bidIcon from "../assets/bid.png";
-import { getAuctions, placeBid } from "../utils/db";
 import { createWebSocketClient } from "../utils/websocket";
 
 function ProductDescription() {
@@ -13,14 +12,80 @@ function ProductDescription() {
   const userName = sessionStorage.getItem("loggedInUserName");
   const userRole = sessionStorage.getItem("loggedInUserRole");
 
-  const loadProduct = () => {
-    const allAuctions = getAuctions();
-    const found = allAuctions.find((a) => String(a.id) === String(id));
-    setProduct(found || null);
+  const loadProduct = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(`http://localhost:8080/products/${id}`, {
+        headers: {
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+      if (response.ok) {
+        const p = await response.json();
+        
+        let highestBid = p.currentHighestBid || p.basePrice;
+        try {
+          const bidRes = await fetch(`http://localhost:8080/bids/auction/${p.productId}/highest`, {
+            headers: {
+              "Authorization": token ? `Bearer ${token}` : ""
+            }
+          });
+          if (bidRes.ok) {
+            const bidData = await bidRes.json();
+            if (bidData && bidData.amount) {
+              highestBid = bidData.amount;
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching highest bid:", e);
+        }
+
+        let sellerName = "";
+        try {
+          const sellerRes = await fetch(`http://localhost:8080/users/${p.sellerId}`, {
+            headers: {
+              "Authorization": token ? `Bearer ${token}` : ""
+            }
+          });
+          if (sellerRes.ok) {
+            const sellerData = await sellerRes.json();
+            if (sellerData && sellerData.name) {
+              sellerName = sellerData.name;
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching seller details:", e);
+        }
+
+        setProduct({
+          id: p.productId,
+          name: p.name,
+          description: p.description,
+          image: p.imageUrl,
+          imageSrc: p.imageUrl,
+          basePrice: p.basePrice,
+          currentBid: highestBid,
+          endTime: p.auctionEndTime,
+          startTime: p.auctionStartTime,
+          status: p.status,
+          sellerId: p.sellerId,
+          seller: sellerName,
+          category: "General", // Default/fallback category
+          features: [] // Fallback features
+        });
+      } else {
+        setProduct(null);
+      }
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      setProduct(null);
+    }
   };
 
   useEffect(() => {
     loadProduct();
+
+    const interval = setInterval(loadProduct, 5000);
 
     const disconnect = createWebSocketClient((bidUpdate) => {
       // Receive bid updates in real time and update only the currentBid state
@@ -36,6 +101,7 @@ function ProductDescription() {
     }, id);
 
     return () => {
+      clearInterval(interval);
       disconnect();
     };
   }, [id]);
@@ -51,7 +117,7 @@ function ProductDescription() {
     );
   }
 
-  const handleBidSubmit = (e) => {
+  const handleBidSubmit = async (e) => {
     e.preventDefault();
 
     if (!userName) {
@@ -71,13 +137,126 @@ function ProductDescription() {
       return;
     }
 
-    const res = placeBid(product.id, numericBid, userName);
-    if (res.success) {
-      alert(`Bid placed successfully! New bid: ₹${res.auction.currentBid.toLocaleString("en-IN")}`);
-      setBidAmount("");
-      loadProduct(); // reload to get new currentBid
-    } else {
-      alert(res.message || "Failed to place bid.");
+    if (product.startTime && new Date(product.startTime) > new Date()) {
+      alert("Bidding has not started yet!");
+      return;
+    }
+
+    const token = sessionStorage.getItem("token");
+    const loggedInUserId = sessionStorage.getItem("loggedInUserId");
+
+    // Check wallet balance
+    try {
+      const walletRes = await fetch(`http://localhost:8080/wallets/user/${loggedInUserId}`, {
+        headers: {
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+      if (walletRes.ok) {
+        const walletData = await walletRes.json();
+        if (walletData.balance < numericBid) {
+          alert(`Insufficient wallet balance! Your balance is ₹${walletData.balance.toLocaleString()}, but your bid amount is ₹${numericBid.toLocaleString()}. Please deposit funds first.`);
+          return;
+        }
+      } else {
+        alert("Unable to verify wallet balance. Please try again.");
+        return;
+      }
+    } catch (err) {
+      console.error("Wallet check error:", err);
+      alert("Error connecting to server to check wallet balance.");
+      return;
+    }
+
+    try {
+      // 1. Get the previous highest bid first (before placing the new one)
+      let prevBidderId = null;
+      let prevAmount = 0;
+      const prevBidRes = await fetch(`http://localhost:8080/bids/auction/${product.id}/highest`, {
+        headers: { "Authorization": token ? `Bearer ${token}` : "" }
+      });
+      if (prevBidRes.ok) {
+        const prevBidData = await prevBidRes.json();
+        if (prevBidData && prevBidData.amount) {
+          prevBidderId = prevBidData.bidderId;
+          prevAmount = prevBidData.amount;
+        }
+      }
+
+      // 2. Post the new bid
+      const response = await fetch("http://localhost:8080/bids", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : ""
+        },
+        body: JSON.stringify({
+          auctionId: product.id,
+          bidderId: loggedInUserId,
+          bidderName: userName,
+          amount: numericBid
+        })
+      });
+
+      if (response.ok) {
+        // 3. New bid successfully placed! Now handle the wallet transactions:
+        // A. Withdraw the new bid amount from current buyer
+        await fetch(`http://localhost:8080/wallets/${loggedInUserId}/withdraw`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": token ? `Bearer ${token}` : ""
+          },
+          body: JSON.stringify({ amount: numericBid })
+        });
+
+        // B. Deposit the new bid amount to the seller
+        if (product.sellerId) {
+          await fetch(`http://localhost:8080/wallets/${product.sellerId}/deposit`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": token ? `Bearer ${token}` : ""
+            },
+            body: JSON.stringify({ amount: numericBid })
+          });
+        }
+
+        // C. If there was a previous bid, refund the old buyer and deduct from the seller
+        if (prevBidderId && prevAmount > 0) {
+          // Refund old buyer
+          await fetch(`http://localhost:8080/wallets/${prevBidderId}/deposit`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": token ? `Bearer ${token}` : ""
+            },
+            body: JSON.stringify({ amount: prevAmount })
+          });
+
+          // Deduct from seller
+          if (product.sellerId) {
+            await fetch(`http://localhost:8080/wallets/${product.sellerId}/withdraw`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+              },
+              body: JSON.stringify({ amount: prevAmount })
+            });
+          }
+        }
+
+        alert("Bid placed successfully! Wallet balances updated.");
+        setBidAmount("");
+        loadProduct();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || errorData.message || "Failed to place bid.");
+      }
+    } catch (error) {
+      console.error("Bid error:", error);
+      alert("Error connecting to server");
     }
   };
 

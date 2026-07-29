@@ -41,15 +41,78 @@ function AdminDashboard() {
   const [bBidAmount, setBBidAmount] = useState("");
 
   // Load dynamic data from DB
-  const loadData = () => {
+  const loadData = async () => {
     setCategories(getCategories());
-    setUsers(getUsers());
-    setAuctions(getAuctions());
-    setBids(getBids());
+
+    const token = sessionStorage.getItem("token");
+
+    // Fetch users
+    try {
+      const response = await fetch("http://localhost:8080/users", {
+        headers: {
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+      if (response.ok) {
+        const uData = await response.json();
+        setUsers(uData);
+      }
+    } catch (e) {
+      console.error("Error loading users:", e);
+    }
+
+    // Fetch products
+    try {
+      const response = await fetch("http://localhost:8080/products", {
+        headers: {
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+      if (response.ok) {
+        const pData = await response.json();
+        const mapped = pData.map(p => ({
+          id: p.productId,
+          name: p.name,
+          description: p.description,
+          image: p.imageUrl,
+          basePrice: p.basePrice,
+          currentBid: p.currentHighestBid || p.basePrice,
+          endTime: p.auctionEndTime,
+          status: p.status,
+          category: "General"
+        }));
+        setAuctions(mapped);
+      }
+    } catch (e) {
+      console.error("Error loading products:", e);
+    }
+
+    // Fetch bids
+    try {
+      const response = await fetch("http://localhost:8080/bids", {
+        headers: {
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+      if (response.ok) {
+        const bidsData = await response.json();
+        const mappedBids = bidsData.map(b => ({
+          id: b.id,
+          bidderName: b.bidderName,
+          bidAmount: b.amount,
+          bidTime: b.bidTime
+        }));
+        setBids(mappedBids);
+      }
+    } catch (e) {
+      console.error("Error loading bids:", e);
+    }
   };
 
   useEffect(() => {
     loadData();
+    const interval = setInterval(loadData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   // ---------------- CATEGORY CRUD ----------------
@@ -103,24 +166,68 @@ function AdminDashboard() {
     window.scrollTo({ top: 300, behavior: "smooth" });
   };
 
-  const handleUpdateUserSubmit = (e) => {
+  const handleUpdateUserSubmit = async (e) => {
     e.preventDefault();
     if (!uName.trim() || !uEmail.trim()) {
       alert("Name and Email cannot be empty.");
       return;
     }
-    updateUser(editingUser.id, { name: uName, email: uEmail, role: uRole });
-    alert("User updated successfully!");
-    setEditingUser(null);
-    loadData();
+    const token = sessionStorage.getItem("token");
+    try {
+      const response = await fetch(`http://localhost:8080/users/${editingUser.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : ""
+        },
+        body: JSON.stringify({
+          name: uName,
+          email: uEmail,
+          role: uRole,
+          enabled: editingUser.enabled !== undefined ? editingUser.enabled : true
+        })
+      });
+      if (response.ok) {
+        alert("User updated successfully!");
+        setEditingUser(null);
+        loadData();
+      } else {
+        alert("Failed to update user");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error connecting to server");
+    }
   };
 
-  const handleDeleteUser = (id) => {
+  const handleDeleteUser = async (id) => {
+    const loggedInUserId = sessionStorage.getItem("loggedInUserId");
+    if (String(id) === String(loggedInUserId)) {
+      alert("You cannot delete yourself!");
+      return;
+    }
+
     if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser(id);
-      loadData();
-      if (editingUser && editingUser.id === id) {
-        setEditingUser(null);
+      const token = sessionStorage.getItem("token");
+      try {
+        const response = await fetch(`http://localhost:8080/users/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        });
+        if (response.ok) {
+          alert("User deleted successfully!");
+          loadData();
+          if (editingUser && editingUser.id === id) {
+            setEditingUser(null);
+          }
+        } else {
+          alert("Failed to delete user");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error connecting to server");
       }
     }
   };
@@ -143,30 +250,63 @@ function AdminDashboard() {
     window.scrollTo({ top: 300, behavior: "smooth" });
   };
 
-  const handleUpdateProductSubmit = (e) => {
+  const handleUpdateProductSubmit = async (e) => {
     e.preventDefault();
     if (!pName.trim()) {
       alert("Product name cannot be empty.");
       return;
     }
-    updateAuction(editingProduct.id, {
-      name: pName,
-      category: pCategory,
-      basePrice: Number(pBasePrice),
-      currentBid: Number(pCurrentBid),
-      endTime: pEndTime
-    });
-    alert("Product updated successfully!");
-    setEditingProduct(null);
-    loadData();
+    const token = sessionStorage.getItem("token");
+    try {
+      const response = await fetch("http://localhost:8080/products", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : ""
+        },
+        body: JSON.stringify({
+          productId: editingProduct.id,
+          name: pName,
+          basePrice: Number(pBasePrice),
+          currentHighestBid: Number(pCurrentBid),
+          auctionEndTime: pEndTime
+        })
+      });
+      if (response.ok) {
+        alert("Product updated successfully!");
+        setEditingProduct(null);
+        loadData();
+      } else {
+        alert("Failed to update product");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error connecting to server");
+    }
   };
 
-  const handleDeleteProduct = (id) => {
+  const handleDeleteProduct = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      deleteAuction(id);
-      loadData();
-      if (editingProduct && editingProduct.id === id) {
-        setEditingProduct(null);
+      const token = sessionStorage.getItem("token");
+      try {
+        const response = await fetch(`http://localhost:8080/products/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        });
+        if (response.ok) {
+          alert("Product deleted successfully!");
+          loadData();
+          if (editingProduct && editingProduct.id === id) {
+            setEditingProduct(null);
+          }
+        } else {
+          alert("Failed to delete product");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error connecting to server");
       }
     }
   };
@@ -327,7 +467,7 @@ function AdminDashboard() {
             </div>
             <div>
               <span className="text-muted small fw-semibold text-start d-block">Revenue</span>
-              <h2 className="fw-bold mb-0" style={{ color: "#d97706", fontSize: "2rem" }}>₹4,82,000</h2>
+              <h2 className="fw-bold mb-0" style={{ color: "#d97706", fontSize: "2rem" }}>₹0</h2>
             </div>
           </div>
         </div>
@@ -817,7 +957,6 @@ function AdminDashboard() {
                   <th className="py-2.5">Bidder Name</th>
                   <th className="py-2.5">Bid Amount</th>
                   <th className="py-2.5">Time</th>
-                  <th className="px-3 py-2.5 text-center" style={{ width: "220px" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -834,22 +973,6 @@ function AdminDashboard() {
                         hour: "2-digit",
                         minute: "2-digit"
                       })}
-                    </td>
-                    <td className="px-3 py-3 text-center">
-                      <div className="d-flex justify-content-center gap-2">
-                        <button
-                          className="btn btn-outline-primary btn-sm px-3 d-flex align-items-center gap-1"
-                          onClick={() => handleEditBidClick(bid)}
-                        >
-                          ✏️ Update
-                        </button>
-                        <button
-                          className="btn btn-outline-danger btn-sm px-3 d-flex align-items-center gap-1"
-                          onClick={() => handleDeleteBid(bid.id)}
-                        >
-                          🗑️ Delete
-                        </button>
-                      </div>
                     </td>
                   </tr>
                 ))}

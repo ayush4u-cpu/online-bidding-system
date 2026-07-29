@@ -1,28 +1,93 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getWallet, addMoney } from "../utils/db";
 
 function MyWallet({ role }) {
   const navigate = useNavigate();
   const [wallet, setWallet] = useState(null);
   const [amount, setAmount] = useState("");
 
-  const loadWallet = () => {
-    setWallet(getWallet(role));
+  const loadWallet = async () => {
+    const userId = sessionStorage.getItem("loggedInUserId");
+    const token = sessionStorage.getItem("token");
+    if (!userId) return;
+
+    try {
+      const walletRes = await fetch(`http://localhost:8080/wallets/user/${userId}`, {
+        headers: {
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+      if (walletRes.ok) {
+        const walletData = await walletRes.json();
+
+        const txRes = await fetch(`http://localhost:8080/transactions/user/${userId}`, {
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        });
+        const txData = txRes.ok ? await txRes.json() : [];
+
+        const mappedTx = txData.map(tx => ({
+          type: tx.type === "DEPOSIT" ? "Deposit" : "Withdrawal",
+          amount: tx.type === "DEPOSIT" ? Number(tx.amount) : -Number(tx.amount),
+          date: new Date(tx.timestamp).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          })
+        }));
+
+        setWallet({
+          balance: walletData.balance,
+          transactions: mappedTx
+        });
+      } else {
+        // If wallet doesn't exist, set fallback empty state
+        setWallet({
+          balance: 0,
+          transactions: []
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching wallet data:", error);
+    }
   };
 
   useEffect(() => {
     loadWallet();
   }, [role]);
 
-  const handleAddMoneySubmit = (e) => {
+  const handleAddMoneySubmit = async (e) => {
     e.preventDefault();
     const numericAmount = parseFloat(amount);
     if (!isNaN(numericAmount) && numericAmount > 0) {
-      addMoney(role, numericAmount);
-      setAmount("");
-      loadWallet(); // refresh state
-      alert(`Successfully added ₹${numericAmount.toLocaleString("en-IN")} to your wallet!`);
+      const userId = sessionStorage.getItem("loggedInUserId");
+      const token = sessionStorage.getItem("token");
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`http://localhost:8080/wallets/${userId}/deposit`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": token ? `Bearer ${token}` : ""
+          },
+          body: JSON.stringify({
+            amount: numericAmount
+          })
+        });
+
+        if (response.ok) {
+          setAmount("");
+          loadWallet(); // refresh state
+          alert(`Successfully added ₹${numericAmount.toLocaleString("en-IN")} to your wallet!`);
+        } else {
+          alert("Failed to add money");
+        }
+      } catch (error) {
+        console.error("Deposit error:", error);
+        alert("Error connecting to server");
+      }
     } else {
       alert("Please enter a valid amount.");
     }

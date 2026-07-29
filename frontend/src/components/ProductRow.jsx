@@ -28,6 +28,51 @@ function ProductRow({ product = fallbackProduct }) {
     }
   };
 
+  const isEnded = new Date(product.endTime) <= new Date();
+  const hasBids = product.currentBid > product.basePrice;
+
+  const renderStatus = () => {
+    if (product.status === "SOLD") {
+      return <SoldStatus />;
+    }
+    if (product.status === "NOT_SOLD") {
+      return (
+        <div
+          style={{
+            backgroundColor: "#f8d7da",
+            color: "#721c24",
+            width: "max-content",
+          }}
+          className="rounded text-center fw-bold px-3 py-1"
+        >
+          NOT SOLD
+        </div>
+      );
+    }
+    if (product.status === "ACTIVE") {
+      if (isEnded) {
+        if (hasBids) {
+          return <SoldStatus />;
+        } else {
+          return (
+            <div
+              style={{
+                backgroundColor: "#f8d7da",
+                color: "#721c24",
+                width: "max-content",
+              }}
+              className="rounded text-center fw-bold px-3 py-1"
+            >
+              NOT SOLD
+            </div>
+          );
+        }
+      }
+      return <ActiveStatus />;
+    }
+    return <ActiveStatus />;
+  };
+
   return (
     <tr>
       <td>
@@ -47,6 +92,11 @@ function ProductRow({ product = fallbackProduct }) {
             <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>
               {product.category}
             </div>
+            {isEnded && hasBids && product.winnerName && (
+              <div className="badge bg-success-subtle text-success border border-success-subtle mt-1" style={{ fontSize: "0.75rem" }}>
+                Winner: {product.winnerName}
+              </div>
+            )}
           </div>
         </div>
       </td>
@@ -58,7 +108,7 @@ function ProductRow({ product = fallbackProduct }) {
       </td>
       <td>
         <div className="py-2">
-          {product.status === "ACTIVE" ? <ActiveStatus /> : <SoldStatus />}
+          {renderStatus()}
         </div>
       </td>
       <td style={{ color: "var(--text-secondary)" }}>

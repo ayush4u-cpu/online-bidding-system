@@ -11,47 +11,62 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    if (email === "admin@mail.com" && password === "admin123") {
-      sessionStorage.setItem("loggedInUserName", "Admin");
-      sessionStorage.setItem("loggedInUserRole", "ADMIN");
-      navigate("/admin/dashboard");
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Email and password are required");
       return;
     }
 
-    // Check localStorage users database
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const matchedUser = users.find(u => u.email === email && u.password === password);
+    try {
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-    if (matchedUser) {
-      sessionStorage.setItem("loggedInUserName", matchedUser.name);
-      sessionStorage.setItem("loggedInUserRole", matchedUser.role);
-      if (matchedUser.role === "ADMIN") {
-        navigate("/admin/dashboard");
-      } else if (matchedUser.role === "SELLER") {
-        navigate("/seller/dashboard");
-      } else if (matchedUser.role === "BUYER") {
-        navigate("/buyer/dashboard");
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.accessToken;
+        sessionStorage.setItem("token", token);
+
+        // Decode token to get userId and role
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const userId = payload.userId;
+        const role = payload.role;
+
+        // Fetch additional user details to get the user's name
+        const userResponse = await fetch(`http://localhost:8080/users/${userId}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          sessionStorage.setItem("loggedInUserName", userData.name);
+          sessionStorage.setItem("loggedInUserRole", role);
+          sessionStorage.setItem("loggedInUserId", userId);
+
+          if (role === "ADMIN") {
+            navigate("/admin/dashboard");
+          } else if (role === "SELLER") {
+            navigate("/seller/dashboard");
+          } else if (role === "BUYER") {
+            navigate("/buyer/dashboard");
+          } else {
+            navigate("/delivery");
+          }
+        } else {
+          alert("Failed to fetch user details");
+        }
       } else {
-        navigate("/delivery");
+        alert("Invalid email or password");
       }
-      return;
-    }
-
-    const storedUser = JSON.parse(sessionStorage.getItem("registeredUser"));
-
-    if (storedUser && storedUser.email === email && storedUser.password === password) {
-      sessionStorage.setItem("loggedInUserName", storedUser.name);
-      sessionStorage.setItem("loggedInUserRole", storedUser.role);
-      if (storedUser.role === "SELLER") {
-        navigate("/seller/dashboard");
-      } else if (storedUser.role === "BUYER") {
-        navigate("/buyer/dashboard");
-      } else {
-        navigate("/delivery");
-      }
-    } else {
-      alert("Invalid email or password");
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Error connecting to server");
     }
   };
 

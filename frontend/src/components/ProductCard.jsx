@@ -36,6 +36,11 @@ function ProductCard({ product = fallbackProduct }) {
         <p className="description text-muted text-center" style={{ fontSize: "0.85rem", height: "60px", overflow: "hidden" }}>
           {product.description}
         </p>
+        {product.startTime && (
+          <div className="text-center text-secondary fw-semibold mt-1" style={{ fontSize: "0.75rem" }}>
+            ⏰ Starts: {new Date(product.startTime).toLocaleString("en-IN", { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+          </div>
+        )}
         <hr />
         <div className="price-row">
           <div>
