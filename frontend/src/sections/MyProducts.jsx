@@ -1,19 +1,64 @@
 import React, { useState, useEffect } from "react";
 import ProductRow from "../components/ProductRow";
-import { getAuctions } from "../utils/db";
 
 function MyProducts({ refreshTrigger }) {
   const [products, setProducts] = useState([]);
-  const sellerName = sessionStorage.getItem("loggedInUserName") || "Seller";
+  const loggedInUserId = Number(sessionStorage.getItem("loggedInUserId"));
 
   useEffect(() => {
-    const allAuctions = getAuctions();
-    // Filter to show only this seller's products
-    const sellerProducts = allAuctions.filter(
-      (product) => product.seller === sellerName
-    );
-    setProducts(sellerProducts);
-  }, [refreshTrigger, sellerName]);
+    const fetchSellerProducts = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await fetch("http://localhost:8080/products", {
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const mapped = await Promise.all(data.map(async (p) => {
+            let highestBid = p.currentHighestBid || p.basePrice;
+            try {
+              const bidRes = await fetch(`http://localhost:8080/bids/auction/${p.productId}/highest`, {
+                headers: {
+                  "Authorization": token ? `Bearer ${token}` : ""
+                }
+              });
+              if (bidRes.ok) {
+                const bidData = await bidRes.json();
+                if (bidData && bidData.amount) {
+                  highestBid = bidData.amount;
+                }
+              }
+            } catch (e) {
+              console.error(e);
+            }
+
+            return {
+              id: p.productId,
+              name: p.name,
+              description: p.description,
+              image: p.imageUrl,
+              basePrice: p.basePrice,
+              currentBid: highestBid,
+              endTime: p.auctionEndTime,
+              status: p.status,
+              sellerId: p.sellerId
+            };
+          }));
+          const filtered = mapped.filter(p => Number(p.sellerId) === loggedInUserId);
+          console.log("MyProducts Debug:", { loggedInUserId, fetchedCount: mapped.length, filteredCount: filtered.length, mapped });
+          setProducts(filtered);
+        }
+      } catch (error) {
+        console.error("Error fetching seller products:", error);
+      }
+    };
+
+    fetchSellerProducts();
+    const interval = setInterval(fetchSellerProducts, 5000);
+    return () => clearInterval(interval);
+  }, [refreshTrigger, loggedInUserId]);
 
   return (
     <div className="card p-4">

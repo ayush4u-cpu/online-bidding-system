@@ -12,7 +12,8 @@ const imageMap = {
   "macbook.png": macbookImg
 };
 
-const defaultAuctions = [
+const defaultAuctions = [];
+const unusedDefaultAuctions = [
   {
     id: "iphone_17",
     name: "iPhone 17 Pro",
@@ -432,7 +433,8 @@ export function getOrders() {
   return JSON.parse(localStorage.getItem("orders")) || [];
 }
 
-const defaultUsers = [
+const defaultUsers = [];
+const unusedDefaultUsers = [
   { id: "USR-001", name: "Admin User", email: "admin@mail.com", password: "admin123", role: "ADMIN" },
   { id: "USR-002", name: "Amit Kumar", email: "amit@mail.com", password: "password123", role: "BUYER" },
   { id: "USR-003", name: "Priya Sharma", email: "priya@mail.com", password: "password123", role: "BUYER" },

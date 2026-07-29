@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import Button from "../components/Button";
-import { getAuctions } from "../utils/db";
 import "../styles/BuyerDashboard.css";
 
 import share from "../assets/share-white.png";
@@ -12,15 +11,39 @@ function BuyerDashboard() {
   const [auctions, setAuctions] = useState([]);
   const userName = sessionStorage.getItem("loggedInUserName") || "Buyer";
 
-  const loadAuctions = () => {
-    const allAuctions = getAuctions();
-    // Filter to show only active auctions
-    const activeAuctions = allAuctions.filter((a) => a.status === "ACTIVE");
-    setAuctions(activeAuctions);
+  const loadAuctions = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch("http://localhost:8080/products", {
+        headers: {
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const mapped = data.map(p => ({
+          id: p.productId,
+          name: p.name,
+          description: p.description,
+          image: p.imageUrl,
+          basePrice: p.basePrice,
+          currentBid: p.currentHighestBid || p.basePrice,
+          endTime: p.auctionEndTime,
+          startTime: p.auctionStartTime,
+          status: p.status
+        }));
+        const activeAuctions = mapped.filter((a) => a.status === "ACTIVE" && new Date(a.endTime) > new Date());
+        setAuctions(activeAuctions);
+      }
+    } catch (error) {
+      console.error("Error fetching auctions:", error);
+    }
   };
 
   useEffect(() => {
     loadAuctions();
+    const interval = setInterval(loadAuctions, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -66,7 +89,7 @@ function BuyerDashboard() {
           ))}
           {auctions.length === 0 && (
             <div className="text-muted py-5 text-center w-100 grid-span-4" style={{ gridColumn: "1 / -1" }}>
-              No active auctions available right now.
+              No auctions available.
             </div>
           )}
         </div>

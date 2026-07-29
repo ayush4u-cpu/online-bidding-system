@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOrders } from "../utils/db";
 import iphoneImg from "../assets/iphone.jpeg";
 import macbookImg from "../assets/macbook.png";
 import ps6Img from "../assets/ps6.png";
@@ -16,7 +15,105 @@ function MyOrders() {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    setOrders(getOrders());
+    const fetchOrders = async () => {
+      const userId = sessionStorage.getItem("loggedInUserId");
+      const token = sessionStorage.getItem("token");
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`http://localhost:8080/orders/buyer/${userId}`, {
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        });
+        
+        let dbOrders = [];
+        if (response.ok) {
+          dbOrders = await response.json();
+        }
+
+        const prodRes = await fetch("http://localhost:8080/products", {
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        });
+
+        if (prodRes.ok) {
+          const products = await prodRes.json();
+          for (const p of products) {
+            if (new Date(p.auctionEndTime) <= new Date()) {
+              const bidRes = await fetch(`http://localhost:8080/bids/auction/${p.productId}/highest`, {
+                headers: {
+                  "Authorization": token ? `Bearer ${token}` : ""
+                }
+              });
+              if (bidRes.ok) {
+                const bidData = await bidRes.json();
+                if (bidData && String(bidData.bidderId) === String(userId)) {
+                  const orderExists = dbOrders.some(o => Number(o.productId) === Number(p.productId));
+                  if (!orderExists) {
+                    const createRes = await fetch("http://localhost:8080/orders", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": token ? `Bearer ${token}` : ""
+                      },
+                      body: JSON.stringify({
+                        productId: p.productId,
+                        buyerId: Number(userId),
+                        sellerId: p.sellerId,
+                        finalPrice: bidData.amount,
+                        status: "PENDING"
+                      })
+                    });
+                    if (createRes.ok) {
+                      const newOrder = await createRes.json();
+                      dbOrders.push(newOrder);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        const mapped = await Promise.all(dbOrders.map(async (order) => {
+          let productName = "Product";
+          let image = "";
+          
+          try {
+            const prodDetailRes = await fetch(`http://localhost:8080/products/${order.productId}`, {
+              headers: {
+                "Authorization": token ? `Bearer ${token}` : ""
+              }
+            });
+            if (prodDetailRes.ok) {
+              const prodData = await prodDetailRes.json();
+              if (prodData) {
+                productName = prodData.name;
+                image = prodData.imageUrl;
+              }
+            }
+          } catch (e) {
+            console.error(e);
+          }
+
+          return {
+            id: order.id,
+            productName: productName,
+            image: image,
+            price: order.finalPrice,
+            status: order.status,
+            deliveryPerson: order.deliveryPersonId ? "Assigned" : "Not Assigned"
+          };
+        }));
+        setOrders(mapped);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
   }, []);
 
   const getStatusBadgeClass = (status) => {
@@ -75,7 +172,7 @@ function MyOrders() {
                         <div className="d-flex align-items-center">
                           {order.image ? (
                             <img
-                              src={imageMap[order.image]}
+                              src={order.image.startsWith("data:") || order.image.startsWith("http") ? order.image : (imageMap[order.image] || order.image || iphoneImg)}
                               alt={order.productName}
                               className="rounded me-3 border bg-light"
                               style={{

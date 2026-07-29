@@ -16,26 +16,43 @@ function Register() {
 
   const [role, setRole] = useState("BUYER");
 
-  const handleRegister = () => {
-    const registeredUser = {
-      name,
-      email,
-      password,
-      role,
-    };
+  const handleRegister = async () => {
+    if (!name || !email || !password || !role) {
+      alert("All fields are required");
+      return;
+    }
 
-    console.log(registeredUser);
+    try {
+      const response = await fetch("http://localhost:8080/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name, email, password, role })
+      });
 
-    sessionStorage.setItem("registeredUser", JSON.stringify(registeredUser));
-
-    // Also save to localStorage users list for Admin Dashboard
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const newId = "USR-" + String(users.length + 1).padStart(3, '0');
-    users.push({ id: newId, ...registeredUser });
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("Registration Successful!");
-    navigate("/login");
+      if (response.ok) {
+        alert("Registration Successful!");
+        navigate("/login");
+      } else {
+        const errorText = await response.text();
+        let errorMessage = "Registration failed";
+        try {
+          const errJson = JSON.parse(errorText);
+          if (errJson.errors && Array.isArray(errJson.errors)) {
+            errorMessage = errJson.errors.map(err => err.defaultMessage || JSON.stringify(err)).join(", ");
+          } else {
+            errorMessage = errJson.message || errJson.error || JSON.stringify(errJson) || errorMessage;
+          }
+        } catch (e) {
+          errorMessage = errorText || errorMessage;
+        }
+        alert(errorMessage);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("Error connecting to server: " + error.message);
+    }
   };
 
   return (
